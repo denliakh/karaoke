@@ -79,8 +79,8 @@
   #result.show{display:flex;animation:pop .35s ease-out}
   @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
   .res-h{font-size:clamp(9px,3cqw,40px);font-weight:800;margin-bottom:8px}
-  .res-row{display:flex;gap:clamp(9px,3cqw,48px);justify-content:center;flex-wrap:wrap}
-  .res-card{padding:8px clamp(9px,2cqw,28px);border-radius:18px}
+  .res-row{display:flex;gap:clamp(8px,2.5cqw,48px);justify-content:center;flex-wrap:nowrap;width:100%}
+  .res-card{padding:8px clamp(9px,2cqw,28px);border-radius:18px;flex:0 1 auto;min-width:0;max-width:48%}
   .res-card.win{background:rgba(255,61,127,.15);box-shadow:0 0 0 2px var(--accent)}
   .crown{font-size:clamp(9px,1.6cqw,22px);font-weight:700;color:#ffd23d}
   .res-name{font-size:clamp(9px,2cqw,28px);color:#e6dcff}
@@ -166,6 +166,7 @@
   #mirror .main-only{display:none!important}
   #mirror .stage-only{display:inline!important}
   #mirror .ch-crown{animation:bob 1.2s ease-in-out infinite!important}
+  #playerWrap:has(#mirror .show) #emptyPlayer{display:none}
   #fsHint{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:20;background:rgba(26,23,34,.92);border:1px solid var(--line);
     padding:12px 18px;border-radius:12px;color:var(--text);font-size:16px;transition:opacity .4s;cursor:pointer}
   body.fs #fsHint{opacity:0;pointer-events:none}

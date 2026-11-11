@@ -82,8 +82,8 @@
   #result.show{display:flex;animation:pop .35s ease-out}
   @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
   .res-h{font-size:clamp(9px,3cqw,40px);font-weight:800;margin-bottom:8px}
-  .res-row{display:flex;gap:clamp(9px,3cqw,48px);justify-content:center;flex-wrap:wrap}
-  .res-card{padding:8px clamp(9px,2cqw,28px);border-radius:18px}
+  .res-row{display:flex;gap:clamp(8px,2.5cqw,48px);justify-content:center;flex-wrap:nowrap;width:100%}
+  .res-card{padding:8px clamp(9px,2cqw,28px);border-radius:18px;flex:0 1 auto;min-width:0;max-width:48%}
   .res-card.win{background:rgba(255,61,127,.15);box-shadow:0 0 0 2px var(--accent)}
   .crown{font-size:clamp(9px,1.6cqw,22px);font-weight:700;color:#ffd23d}
   .res-name{font-size:clamp(9px,2cqw,28px);color:#e6dcff}
@@ -232,7 +232,7 @@
     </div>
 
     <div class="sec-box" id="roomBox" style="display:none">
-      <h3>🌐 Комната <span class="status" id="roomPing" style="margin:0;float:right"></span></h3>
+      <h3>🌐 Комната <span id="roomTitleH" style="text-transform:none;letter-spacing:0;color:var(--text)"></span> <span class="status" id="roomPing" style="margin:0;float:right"></span></h3>
       <div class="status" id="roomMembers" style="margin:-4px 0 8px"></div>
       <div id="chatList"></div>
       <form id="chatForm" class="row" style="flex-wrap:nowrap;margin-top:8px"><input id="chatIn" placeholder="Написать всем…" autocomplete="off" style="flex:1;min-width:0;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10"><button class="btn small" type="submit">➤</button></form>
@@ -348,7 +348,7 @@
   <button class="btn small sec" id="roomModalClose" style="margin-top:14px">Закрыть</button>
 </div></div>
 <div class="modal" id="roomJoin"><div class="box">
-  <h2>🎤 Вас пригласили в караоке!</h2>
+  <h2 id="joinTitle">🎤 Вас пригласили в караоке!</h2>
   <div class="hint">Видео, заставки и оценки будут идти вместе с хозяином комнаты. Как вас зовут?</div>
   <div class="row" style="flex-wrap:nowrap"><input id="joinName" placeholder="Ваше имя" autocomplete="off" style="flex:1;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:#0c0a10;font-size:16px">
   <button class="btn" id="joinGo">Войти</button></div>
@@ -655,7 +655,7 @@
               offset:0, rtt:9999, lag:0, pend:{}, gCur:null, lastOv:'', ovT:0, members:[] };
   window.__room = R;
   const rnd = n => Array.from({length:n}, () => 'abcdefghjkmnpqrstuvwxyz23456789'[Math.floor(Math.random()*31)]).join('');
-  const roomLink = () => location.origin + location.pathname + '?room=' + R.id;
+  const roomLink = () => location.origin + location.pathname + '?room=' + R.id + (R.title ? '&n=' + encodeURIComponent(R.title) : '');
   function loadPeer(){
     return new Promise((res, rej) => {
       if(window.Peer) return res();
@@ -671,7 +671,8 @@
   function hostBroadcast(d){ Object.values(R.links).forEach(l => { try{ l.send(d); }catch(e){} }); }
   function hostMembers(){ R.members = [R.name || 'Хозяин', ...Object.values(R.links).map(l => l.name || 'гость')]; hostBroadcast({ t:'members', list:R.members }); renderRoom(); }
   async function createRoom(){
-    if(!R.name){ const n = $('roomMyName').value.trim(); if(!n){ $('roomMyName').focus(); toast('Впишите своё имя'); return; } R.name = n; store.set('myName', n); }
+    R.title = ($('roomTitleIn').value.trim() || 'Караоке у ' + ($('roomMyName').value.trim() || 'друзей')).slice(0, 60); store.set('roomTitle', R.title);
+    const n = $('roomMyName').value.trim(); if(!n){ $('roomMyName').focus(); toast('Впишите своё имя'); return; } R.name = n; store.set('myName', n);
     R.id = (new URLSearchParams(location.search).has('local') ? 'local-' : '') + rnd(6);
     R.role = 'host';
     try{
@@ -698,7 +699,7 @@
     renderRoom(); sysChat('Комната создана. Отправьте ссылку гостям 👆');
   }
   function onHostMsg(l, m){
-    if(m.t === 'hello'){ l.name = (m.name || 'Гость').slice(0, 30); l.send({ t:'welcome', host:R.name, members:R.members }); sysChat('🌐 ' + l.name + ' подключился(лась)!'); hostMembers(); hostSync(); R.lastOv = ''; pushOverlays(true); R.pushQueue(); }
+    if(m.t === 'hello'){ l.name = (m.name || 'Гость').slice(0, 30); l.send({ t:'welcome', host:R.name, title:R.title, members:R.members }); sysChat('🌐 ' + l.name + ' подключился(лась)!'); hostMembers(); hostSync(); R.lastOv = ''; pushOverlays(true); R.pushQueue(); }
     else if(m.t === 'ping'){ l.send({ t:'pong', c0:m.c0, h:Date.now() }); }
     else if(m.t === 'chat'){ addChat(l.name, m.text); hostBroadcast({ t:'chat', who:l.name, text:m.text }); }
     else if(m.t === 'react'){ showReact(m.e, l.name); hostBroadcast({ t:'react', e:m.e, who:l.name }); }
@@ -762,7 +763,7 @@
     clearInterval(R.pingT); R.pingT = setInterval(() => R.sendHost && R.sendHost({ t:'ping', c0: Date.now() }), 20000);
   }
   function onGuestMsg(m){
-    if(m.t === 'welcome'){ $('roomJoin').classList.remove('show'); toast('🌐 Вы в комнате у ' + m.host + '!', 4000); guestMode(); sysChat('Вы подключились к ' + m.host + '. Пишите в чат, выбирайте песни — они попадут в общую очередь.'); }
+    if(m.t === 'welcome'){ R.title = m.title || R.title; $('roomJoin').classList.remove('show'); toast('🌐 Вы в комнате «' + (R.title || m.host) + '»!', 4000); guestMode(); sysChat('Вы подключились к ' + m.host + '. Пишите в чат, выбирайте песни — они попадут в общую очередь.'); }
     else if(m.t === 'pong'){ const t1 = Date.now(), rtt = t1 - m.c0; if(rtt <= R.rtt * 1.5 || rtt < 150){ R.rtt = Math.min(R.rtt, rtt); R.offset = m.h - (m.c0 + rtt/2); } renderRoom(); }
     else if(m.t === 'sync') guestSync(m);
     else if(m.t === 'ov'){ const el = $('roomMirror'); if(el) el.innerHTML = m.html; }
@@ -854,16 +855,17 @@
     const inRoom = !!R.role;
     $('roomBox').style.display = inRoom ? 'block' : 'none';
     $('roomBtn').textContent = inRoom ? '🌐 Комната ●' : '🌐 Комната';
+    $('roomTitleH').textContent = R.title ? '— ' + R.title : '';
     $('roomMembers').textContent = R.members.length ? R.members.join(', ') : '';
     $('roomPing').textContent = R.role === 'guest' && R.rtt < 9999 ? 'связь ' + Math.round(R.rtt) + ' мс' : '';
     if(R.role === 'host'){
-      $('roomBody').innerHTML = `<div class="hint">Отправьте эту ссылку гостям (WhatsApp, Telegram…). Они откроют её в браузере — ничего ставить не нужно.</div>
+      $('roomBody').innerHTML = `<div style="font-size:18px;font-weight:800;margin-bottom:6px">🎤 ${esc(R.title||'')}</div><div class="hint">Отправьте эту ссылку гостям (WhatsApp, Telegram…). Они откроют её в браузере — ничего ставить не нужно.</div>
         <input id="roomLinkIn" readonly value="${esc(roomLink())}" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10">
         <div class="row" style="margin-top:10px"><button class="btn small" id="roomCopy">📋 Копировать</button>${navigator.share ? '<button class="btn small sec" id="roomShare">📤 Поделиться</button>' : ''}
         <button class="btn small sec" id="roomClose">Закрыть комнату</button></div>
         <div class="status" style="margin-top:10px">В комнате: ${esc(R.members.join(', ') || R.name)}</div>`;
       $('roomCopy').onclick = () => { $('roomLinkIn').select(); navigator.clipboard.writeText(roomLink()).then(() => toast('Ссылка скопирована')).catch(() => { document.execCommand('copy'); toast('Ссылка скопирована'); }); };
-      const sh = $('roomShare'); if(sh) sh.onclick = () => navigator.share({ title:'Караоке 🎤', text:'Заходи к нам в караоке!', url: roomLink() }).catch(()=>{});
+      const sh = $('roomShare'); if(sh) sh.onclick = () => navigator.share({ title:'Караоке 🎤', text:'Заходи к нам в караоке «' + (R.title||'') + '»! 🎤', url: roomLink() }).catch(()=>{});
       $('roomClose').onclick = () => { closeRoom(); $('roomModal').classList.remove('show'); };
     } else if(R.role === 'guest'){
       $('roomBody').innerHTML = `<div class="hint">Вы в гостях. Видео и заставки идут синхронно с хозяином. Выбирайте песни — они уйдут в общую очередь под вашим именем.</div>
@@ -871,7 +873,10 @@
       $('roomLeave').onclick = () => { location.href = location.pathname; };
     } else {
       $('roomBody').innerHTML = `<div class="hint">Караоке с друзьями в другом городе: создайте комнату и отправьте ссылку. У гостей будут то же видео, заставки «Поёт…», оценки и общий чат.</div>
-        <div class="row" style="flex-wrap:nowrap"><input id="roomMyName" placeholder="Ваше имя" value="${esc(R.name)}" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10">
+        <label class="status">Название комнаты</label>
+        <input id="roomTitleIn" placeholder="Например: Новый год у Дениса" value="${esc(store.get('roomTitle',''))}" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10;margin:4px 0 10px">
+        <label class="status">Ваше имя</label>
+        <div class="row" style="flex-wrap:nowrap;margin-top:4px"><input id="roomMyName" placeholder="Ваше имя" value="${esc(R.name)}" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10">
         <button class="btn" id="roomCreate">Создать комнату</button></div>`;
       $('roomCreate').onclick = createRoom;
     }
@@ -886,6 +891,8 @@
   R.onState = () => { if(R.role === 'host') hostSync(); };
   // открыли по ссылке-приглашению
   if(ROOM_PARAM){
+    R.title = new URLSearchParams(location.search).get('n') || '';
+    if(R.title) $('joinTitle').textContent = '🎤 Вас пригласили в «' + R.title + '»!';
     $('joinName').value = R.name; $('roomJoin').classList.add('show');
     $('joinGo').onclick = () => joinRoom(ROOM_PARAM);
     $('joinName').onkeydown = e => { if(e.key === 'Enter') joinRoom(ROOM_PARAM); };
@@ -1161,7 +1168,7 @@
         <div class="res-title">${titleFor(x.r.total)}</div>
         <div class="res-parts">${x.r.pitch!==null ? `<span>🎯 Чистота ${x.r.pitch}</span>` : ''}<span>🎤 Активность ${x.r.activity}</span><span>💪 Уверенность ${x.r.conf}</span></div>
       </div>`).join('') + '</div><div class="res-song">' + esc(song||'') + '</div>' +
-      (nxt ? `<div class="res-next">Следующий: <b>${esc(singersText(nxt))}</b> — готовься! 🎤</div>` : '');
+      (nxt ? `<div class="res-next">Следующий: <b>${esc(nxt.turnFor ? pname(nxt.turnFor) : singersText(nxt))}</b> — готовься! 🎤</div>` : '');
     animateResult(onDone);
     return true;
   }
