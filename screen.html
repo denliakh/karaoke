@@ -176,11 +176,12 @@
 <body>
 <div id="playerWrap">
   <div id="player"></div>
-  <div class="empty" id="emptyPlayer" style="font-size:clamp(16px,3cqw,40px);flex-direction:column;gap:2cqw"><img src="logo.png" alt="Пой-Пой" style="width:55cqw"><small style="font-size:.6em">Второй экран · управление — в основном окне</small></div>
+  <div class="empty" id="emptyPlayer" style="font-size:clamp(16px,3cqw,40px);flex-direction:column;gap:2cqw"><img src="logo.png" alt="Пой-Пой" style="width:55cqw" id="brandImg"><small style="font-size:.6em">Второй экран · управление — в основном окне</small></div>
   <div id="mirror"></div>
 </div>
 <div id="fsHint">🖱 Кликните сюда (или нажмите F) — полный экран</div>
 <div class="lost" id="lost">Основное окно караоке закрыто.<br>Откройте «Караоке» и снова нажмите «📺 Второй экран».</div>
+<script>document.getElementById('brandImg').src=/^(ru|uk|be|kk)/i.test(navigator.language||'')?'logo-ru.png':'logo.png';</script>
 <script>
 (() => {
   const op = window.opener;
