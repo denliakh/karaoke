@@ -140,6 +140,22 @@
   .qwho{font-size:12px;color:#ffb3cf;font-weight:700}
   #stageNote{position:absolute;inset:0;z-index:4;display:none;flex-direction:column;gap:8px;align-items:center;justify-content:center;background:#100d18;color:var(--muted);text-align:center}
   .stage-only{display:none}
+  #roomMirror{position:absolute;inset:0;z-index:7;pointer-events:none}
+  #roomMirror:empty{display:none}
+  #roomMirror .res-btns{display:none!important}
+  #roomMirror *{animation:none!important}
+  #roomMirror .main-only{display:none!important}
+  #roomMirror .stage-only{display:inline!important}
+  body:not(.guest) #playerWrap > #roomMirror{display:none}
+  #reactLayer,#reactLayer2{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:hidden}
+  #reactLayer2{position:fixed;z-index:40}
+  .react{position:absolute;bottom:4%;font-size:clamp(28px,8cqw,110px);animation:floatUp 3.1s ease-out forwards;text-align:center;line-height:1}
+  .react small{display:block;font-size:max(10px,.22em);color:#fff;text-shadow:0 1px 3px #000}
+  @keyframes floatUp{0%{bottom:4%;transform:scale(.6);opacity:0}12%{opacity:1;transform:scale(1.15)}100%{bottom:78%;transform:scale(1);opacity:0}}
+  #chatList{max-height:190px;overflow:auto;font-size:14px;line-height:1.45;background:#0c0a10;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  #chatList i{color:var(--muted)}
+  body.guest .host-only, body.guest #nextBtn, body.guest #pauseBtn, body.guest #gameBtn, body.guest #breakBtn, body.guest #catNow,
+  body.guest [data-tab="party"], body.guest #partyBar, body.guest label:has(#autoFs), body.guest .kbd{display:none!important}
   .kbd{font-size:12px;color:var(--muted);margin-top:8px}
   .ov .res-btns .btn,#result .res-btns .btn{font-size:clamp(11px,2.2cqw,20px);padding:clamp(6px,1.2cqw,14px) clamp(10px,2cqw,22px)}
   .ov,#result{padding:clamp(6px,2cqw,24px)}
@@ -154,7 +170,8 @@
       <input id="q" placeholder="Название песни или исполнитель…" autocomplete="off" autofocus>
       <button class="btn" type="submit">Найти</button>
     </form>
-    <button class="btn sec" id="settingsBtn" title="Ключ YouTube">⚙️</button>
+    <button class="btn sec" id="roomBtn" title="Караоке с друзьями онлайн">🌐 Комната</button>
+    <button class="btn sec host-only" id="settingsBtn" title="Ключ YouTube">⚙️</button>
   </header>
 
   <main>
@@ -196,6 +213,8 @@
         <div class="ov" id="splash"><div id="splashBody"></div><div class="res-btns"><button class="btn" id="splashGo">▶ Начать сейчас</button><button class="btn sec" id="splashAway">🚶 Отошёл → следующий</button><button class="btn sec" id="splashAway2" style="display:none"></button></div></div>
         <div class="ov" id="champ"><div id="champBody"></div><div class="res-btns"><button class="btn" id="champClose">Ура! 🎉</button></div></div>
         <div class="ov" id="breakOv"><div class="br-emoji">🍢🥂</div><div class="br-t">Перерыв</div><div id="breakTime">00:00</div><div class="res-btns"><button class="btn" id="breakGo">▶ Продолжаем!</button></div></div>
+        <div id="roomMirror"></div>
+        <div id="reactLayer"></div>
         <div id="result"><div id="resultBody"></div><div class="res-btns"><button class="btn" id="resultNext">Дальше ▶</button><button class="btn sec" id="resultStay">Подождать</button></div></div>
       </div>
       <div class="now" id="now"></div>
@@ -210,6 +229,17 @@
       </div>
       <label class="switch"><input type="checkbox" id="autoFs" checked> Сразу на весь экран при запуске песни</label>
       <div class="kbd">Клавиши: F — весь экран, N — следующая, пробел — пауза (когда фокус не в поиске)</div>
+    </div>
+
+    <div class="sec-box" id="roomBox" style="display:none">
+      <h3>🌐 Комната <span class="status" id="roomPing" style="margin:0;float:right"></span></h3>
+      <div class="status" id="roomMembers" style="margin:-4px 0 8px"></div>
+      <div id="chatList"></div>
+      <form id="chatForm" class="row" style="flex-wrap:nowrap;margin-top:8px"><input id="chatIn" placeholder="Написать всем…" autocomplete="off" style="flex:1;min-width:0;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10"><button class="btn small" type="submit">➤</button></form>
+      <div class="row" id="reactRow" style="margin-top:8px">
+        <button class="btn small sec" data-r="🥂">🥂 Чокаемся!</button><button class="btn small sec" data-r="👏">👏</button><button class="btn small sec" data-r="🔥">🔥</button>
+        <button class="btn small sec" data-r="❤️">❤️</button><button class="btn small sec" data-r="😂">😂</button><button class="btn small sec" data-r="🎤">🎤</button>
+      </div>
     </div>
 
     <div class="sec-box" id="gameBox" style="display:none">
@@ -312,6 +342,19 @@
   <button class="btn small sec" id="cpClose" style="margin-top:14px">Закрыть</button>
 </div></div>
 
+<div class="modal" id="roomModal"><div class="box">
+  <h2>🌐 Онлайн-комната</h2>
+  <div id="roomBody"></div>
+  <button class="btn small sec" id="roomModalClose" style="margin-top:14px">Закрыть</button>
+</div></div>
+<div class="modal" id="roomJoin"><div class="box">
+  <h2>🎤 Вас пригласили в караоке!</h2>
+  <div class="hint">Видео, заставки и оценки будут идти вместе с хозяином комнаты. Как вас зовут?</div>
+  <div class="row" style="flex-wrap:nowrap"><input id="joinName" placeholder="Ваше имя" autocomplete="off" style="flex:1;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:#0c0a10;font-size:16px">
+  <button class="btn" id="joinGo">Войти</button></div>
+  <div class="status" id="joinStatus" style="margin-top:10px"></div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script src="catalog.js"></script>
@@ -326,6 +369,8 @@
   const decode = s => { const t=document.createElement('textarea'); t.innerHTML=s; return t.value; };
   const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+  const ROOM_PARAM = new URLSearchParams(location.search).get('room');
+  const isGuest = () => window.__room && window.__room.role === 'guest';
   // ---------- API key ----------
   let apiKey = store.get('key', '');
   const openKey = () => { $('keyInput').value = apiKey; $('keyStatus').textContent=''; $('keyModal').classList.add('show'); };
@@ -342,7 +387,7 @@
       setTimeout(()=>{ $('keyModal').classList.remove('show'); $('q').focus(); }, 700);
     }catch(e){ $('keyStatus').innerHTML = '<span class="err">'+esc(e.message)+'</span>'; }
   };
-  if(!apiKey) openKey();
+  if(!apiKey && !ROOM_PARAM) openKey();
 
   // ---------- Search ----------
   async function ytSearch(q, key, max=24){
@@ -369,6 +414,7 @@
 
   // кэш поиска: одна и та же песня не тратит лимит повторно (хранится 30 дней)
   async function cachedSearch(q){
+    if(isGuest() && !apiKey) return window.__room.search(q);
     const k = q.trim().toLowerCase(); const cache = store.get('cache', {});
     const hit = cache[k]; if(hit && Date.now() - hit.t < 30*864e5) return hit.r;
     const r = await ytSearch(q, apiKey);
@@ -381,7 +427,7 @@
   $('searchForm').onsubmit = async e => {
     e.preventDefault();
     const q = $('q').value.trim(); if(!q) return;
-    if(!apiKey){ openKey(); return; }
+    if(!apiKey && !isGuest()){ openKey(); return; }
     switchTab('search');
     $('hint').innerHTML = '<span class="spin"></span> Ищу «'+esc(q)+'»…';
     $('results').innerHTML = '';
@@ -430,6 +476,8 @@
   let current = null;
   const saveQueue = () => store.set('queue', queue);
   function renderQueue(){
+    if(isGuest()) return;
+    setTimeout(() => window.__room && window.__room.pushQueue && window.__room.pushQueue(), 0);
     const pt = window.__party;
     if(pt && pt.P.on){
       const pv = pt.preview(15);
@@ -465,6 +513,7 @@
     if(ev && ev.target && ev.target !== player) return;   // события «спящего» плеера игнорируем
     const g = window.__game; if(g) g.playing = ev.data === 1;
     if(ev.data === 0) endSong();
+    window.__room && window.__room.onState && window.__room.onState();
   }
   function onPlayerError(ev){
     if(ev && ev.target && ev.target !== player) return;
@@ -501,11 +550,13 @@
     window.__applyMusic && window.__applyMusic();
   }
   function playNow(v, gesture){
+    if(isGuest()){ window.__room.propose(v); return; }
     if(gesture && $('autoFs').checked) goFs();
     load(v);
   }
   // песня закончилась (или её пропустили): оценка → следующая
   function endSong(){
+    if(isGuest()) return;
     const pt = window.__party;
     if(pt && pt.P.on){
       const after = () => { if(!pt.checkChampion()) pt.partyNext(false); };
@@ -516,6 +567,7 @@
     const shown = window.__showResult && window.__showResult(current && current.title, () => playNext(false)); if(!shown) playNext(false);
   }
   function playNext(gesture){
+    if(isGuest()) return;
     const pt = window.__party;
     if(pt && pt.P.on) return pt.partyNext(gesture);
     if(!queue.length){
@@ -542,7 +594,7 @@
 
   // ======================= ВТОРОЙ ЭКРАН =======================
   let stage = null, mirrorRaf = 0;
-  const OVERLAYS = ['splash','champ','breakOv','result'];
+  const OVERLAYS = ['splash','champ','breakOv','result','roomMirror'];
   function syncMirror(){
     mirrorRaf = 0; if(!stage) return;
     try{
@@ -598,6 +650,248 @@
   $('stageBtn').onclick = () => { if(stage){ try{ stage.w.close(); }catch(e){} window.__stageClosed(); } else openStage(); };
   $('stageBack').onclick = () => $('stageBtn').click();
   window.addEventListener('beforeunload', () => { if(stage) try{ stage.w.close(); }catch(e){} });
+  // ======================= ОНЛАЙН-КОМНАТА =======================
+  const R = { role:null, id:null, name: store.get('myName', ''), links:{}, sendHost:null, bc:null, peer:null,
+              offset:0, rtt:9999, lag:0, pend:{}, gCur:null, lastOv:'', ovT:0, members:[] };
+  window.__room = R;
+  const rnd = n => Array.from({length:n}, () => 'abcdefghjkmnpqrstuvwxyz23456789'[Math.floor(Math.random()*31)]).join('');
+  const roomLink = () => location.origin + location.pathname + '?room=' + R.id;
+  function loadPeer(){
+    return new Promise((res, rej) => {
+      if(window.Peer) return res();
+      const urls = ['https://unpkg.com/peerjs@1.5/dist/peerjs.min.js', 'https://cdn.jsdelivr.net/npm/peerjs@1.5/dist/peerjs.min.js'];
+      const tryLoad = i => { if(i >= urls.length) return rej(new Error('Не удалось загрузить модуль связи — проверьте интернет'));
+        const s = document.createElement('script'); s.src = urls[i]; s.onload = () => res(); s.onerror = () => { s.remove(); tryLoad(i+1); }; document.head.appendChild(s); };
+      tryLoad(0);
+    });
+  }
+  const isLocal = id => id.startsWith('local-');   // для проверки в двух вкладках одного браузера
+
+  // ---------- хозяин ----------
+  function hostBroadcast(d){ Object.values(R.links).forEach(l => { try{ l.send(d); }catch(e){} }); }
+  function hostMembers(){ R.members = [R.name || 'Хозяин', ...Object.values(R.links).map(l => l.name || 'гость')]; hostBroadcast({ t:'members', list:R.members }); renderRoom(); }
+  async function createRoom(){
+    if(!R.name){ const n = $('roomMyName').value.trim(); if(!n){ $('roomMyName').focus(); toast('Впишите своё имя'); return; } R.name = n; store.set('myName', n); }
+    R.id = (new URLSearchParams(location.search).has('local') ? 'local-' : '') + rnd(6);
+    R.role = 'host';
+    try{
+      if(isLocal(R.id)){
+        R.bc = new BroadcastChannel('krk-' + R.id);
+        R.bc.onmessage = e => { const m = e.data; if(m.to !== 'host') return;
+          const l = R.links[m.from] || (R.links[m.from] = { id:m.from, send: d => R.bc.postMessage({ from:'host', to:m.from, data:d }) });
+          onHostMsg(l, m.data); };
+      } else {
+        await loadPeer();
+        await new Promise((res, rej) => {
+          R.peer = new Peer('krk-' + R.id, { debug:0 });
+          R.peer.on('open', res);
+          R.peer.on('error', e => { if(R.role === 'host' && !Object.keys(R.links).length) rej(new Error('Не удалось создать комнату (' + (e.type||e) + ')')); });
+          R.peer.on('connection', c => {
+            c.on('open', () => { R.links[c.peer] = { id:c.peer, c, send: d => c.open && c.send(d) }; });
+            c.on('data', d => { const l = R.links[c.peer]; if(l) onHostMsg(l, d); });
+            c.on('close', () => { const l = R.links[c.peer]; delete R.links[c.peer]; if(l){ sysChat((l.name||'Гость') + ' вышел(а)'); hostMembers(); } });
+          });
+        });
+      }
+    }catch(err){ R.role = null; toast(err.message, 5000); return; }
+    clearInterval(R.syncT); R.syncT = setInterval(hostSync, 1500);
+    renderRoom(); sysChat('Комната создана. Отправьте ссылку гостям 👆');
+  }
+  function onHostMsg(l, m){
+    if(m.t === 'hello'){ l.name = (m.name || 'Гость').slice(0, 30); l.send({ t:'welcome', host:R.name, members:R.members }); sysChat('🌐 ' + l.name + ' подключился(лась)!'); hostMembers(); hostSync(); R.lastOv = ''; pushOverlays(true); R.pushQueue(); }
+    else if(m.t === 'ping'){ l.send({ t:'pong', c0:m.c0, h:Date.now() }); }
+    else if(m.t === 'chat'){ addChat(l.name, m.text); hostBroadcast({ t:'chat', who:l.name, text:m.text }); }
+    else if(m.t === 'react'){ showReact(m.e, l.name); hostBroadcast({ t:'react', e:m.e, who:l.name }); }
+    else if(m.t === 'propose'){ guestProposal(l.name, m.v); }
+    else if(m.t === 'search'){ cachedSearch(m.q).then(r => l.send({ t:'res', rid:m.rid, r })).catch(err => l.send({ t:'res', rid:m.rid, err: err.message })); }
+  }
+  function guestProposal(name, v){
+    const pt = window.__party, P = pt.P;
+    if(P.on){
+      let p = P.players.find(x => x.name.toLowerCase() === (name||'').toLowerCase());
+      if(!p){ p = { id: Math.random().toString(36).slice(2,9), name, away:false, remote:true }; P.players.push(p); }
+      pt.addSong(v, { singers:[p.id] });
+    } else { addSong(v); }
+    sysChat('🎵 ' + name + ' выбрал(а): ' + v.title.slice(0, 60));
+  }
+  function hostSync(){
+    if(R.role !== 'host') return;
+    let st = -1, time = 0;
+    try{ if(playerReady){ st = player.getPlayerState(); time = player.getCurrentTime() || 0; } }catch(e){}
+    const splash = $('splash').classList.contains('show');
+    hostBroadcast({ t:'sync', id: current && !splash ? current.id : null, title: current ? current.title : '', time, state: splash ? 5 : st, h: Date.now() });
+  }
+  function pushOverlays(force){
+    if(R.role !== 'host') return;
+    const now = Date.now();
+    if(!force && now - R.ovT < 150){ clearTimeout(R.ovTimer); R.ovTimer = setTimeout(() => pushOverlays(true), 160); return; }
+    const html = ['splash','champ','breakOv','result'].map(id => $(id).outerHTML).join('');
+    if(html === R.lastOv) return;
+    R.lastOv = html; R.ovT = now; hostBroadcast({ t:'ov', html });
+  }
+  new MutationObserver(() => pushOverlays(false)).observe($('playerWrap'), { subtree:true, childList:true, attributes:true, characterData:true });
+
+  // ---------- гость ----------
+  async function joinRoom(id){
+    R.id = id; R.role = 'guest';
+    const name = $('joinName').value.trim() || 'Гость'; R.name = name; store.set('myName', name);
+    $('joinStatus').innerHTML = '<span class="spin"></span> Подключаюсь…';
+    try{
+      if(isLocal(id)){
+        const me = rnd(8);
+        R.bc = new BroadcastChannel('krk-' + id);
+        R.bc.onmessage = e => { const m = e.data; if(m.to === me || m.to === '*') onGuestMsg(m.data); };
+        R.sendHost = d => R.bc.postMessage({ from:me, to:'host', data:d });
+      } else {
+        await loadPeer();
+        await new Promise((res, rej) => {
+          R.peer = new Peer({ debug:0 });
+          const to = setTimeout(() => rej(new Error('Комната не отвечает. Проверьте ссылку — и что у хозяина открыто караоке.')), 15000);
+          R.peer.on('error', e => { clearTimeout(to); rej(new Error(e.type === 'peer-unavailable' ? 'Комната не найдена — возможно, хозяин её закрыл.' : 'Ошибка связи: ' + (e.type||e))); });
+          R.peer.on('open', () => {
+            const c = R.peer.connect('krk-' + id, { reliable:true });
+            c.on('open', () => { clearTimeout(to); R.sendHost = d => c.open && c.send(d); res(); });
+            c.on('data', onGuestMsg);
+            c.on('close', () => { sysChat('⚠️ Связь с хозяином потеряна'); R.sendHost = null; });
+          });
+        });
+      }
+    }catch(err){ $('joinStatus').innerHTML = '<span class="err">' + esc(err.message) + '</span>'; R.role = null; return; }
+    R.sendHost({ t:'hello', name });
+    for(let i = 0; i < 6; i++) setTimeout(() => R.sendHost && R.sendHost({ t:'ping', c0: Date.now() }), 300 + i*400);
+    clearInterval(R.pingT); R.pingT = setInterval(() => R.sendHost && R.sendHost({ t:'ping', c0: Date.now() }), 20000);
+  }
+  function onGuestMsg(m){
+    if(m.t === 'welcome'){ $('roomJoin').classList.remove('show'); toast('🌐 Вы в комнате у ' + m.host + '!', 4000); guestMode(); sysChat('Вы подключились к ' + m.host + '. Пишите в чат, выбирайте песни — они попадут в общую очередь.'); }
+    else if(m.t === 'pong'){ const t1 = Date.now(), rtt = t1 - m.c0; if(rtt <= R.rtt * 1.5 || rtt < 150){ R.rtt = Math.min(R.rtt, rtt); R.offset = m.h - (m.c0 + rtt/2); } renderRoom(); }
+    else if(m.t === 'sync') guestSync(m);
+    else if(m.t === 'ov'){ const el = $('roomMirror'); if(el) el.innerHTML = m.html; }
+    else if(m.t === 'chat') addChat(m.who, m.text);
+    else if(m.t === 'react') showReact(m.e, m.who);
+    else if(m.t === 'members'){ R.members = m.list; renderRoom(); }
+    else if(m.t === 'queue'){
+      $('queue').innerHTML = m.items.map(v => `<li>${v.thumb ? `<img src="${v.thumb}" alt="">` : '<div style="width:64px;text-align:center;font-size:22px">🎤</div>'}<div class="qt">${v.who ? `<div class="qwho">${esc(v.who)}</div>` : ''}${esc(v.title)}</div></li>`).join('');
+      $('queueEmpty').style.display = m.items.length ? 'none' : 'block';
+      $('queueEmpty').textContent = 'Очередь пуста — выбирайте песни!';
+    }
+    else if(m.t === 'res'){ const p = R.pend[m.rid]; if(p){ delete R.pend[m.rid]; m.err ? p.rej(new Error(m.err)) : p.res(m.r); } }
+  }
+  function guestSync(m){
+    if(!playerReady) return;
+    const hostNow = Date.now() + R.offset;
+    const target = Math.max(0, m.time + (m.state === 1 ? (hostNow - m.h)/1000 : 0) - R.lag);
+    if(!m.id || m.state === 5){
+      if(R.gCur){ try{ player.stopVideo(); }catch(e){} R.gCur = null; }
+      return;
+    }
+    if(R.gCur !== m.id){
+      R.gCur = m.id; current = { id:m.id, title:m.title };
+      $('emptyPlayer').style.display = 'none'; $('now').innerHTML = '🎶 <b>' + esc(m.title || '') + '</b>';
+      player.loadVideoById({ videoId:m.id, startSeconds: target });
+      window.__applyMusic && window.__applyMusic();
+      return;
+    }
+    let ps = -1, ct = 0; try{ ps = player.getPlayerState(); ct = player.getCurrentTime() || 0; }catch(e){}
+    if(m.state === 2){ if(ps === 1) player.pauseVideo(); if(Math.abs(ct - target) > 0.5) player.seekTo(target, true); return; }
+    if(m.state === 1){
+      if(ps !== 1 && ps !== 3) player.playVideo();
+      if(ps === 1 && Math.abs(ct - target) > 0.35) player.seekTo(target + 0.1, true);
+    }
+  }
+  function guestMode(){
+    document.body.classList.add('guest');
+    window.__party.P.on = false; window.__party.renderParty();
+    if(store.get('tab','search') === 'party') switchTab('search');
+    renderRoom();
+  }
+  function roomSearch(q){
+    return new Promise((res, rej) => {
+      if(!R.sendHost) return rej(new Error('Нет связи с хозяином комнаты'));
+      const rid = rnd(6); R.pend[rid] = { res, rej };
+      R.sendHost({ t:'search', q, rid });
+      setTimeout(() => { if(R.pend[rid]){ delete R.pend[rid]; rej(new Error('Хозяин не ответил на поиск')); } }, 15000);
+    });
+  }
+  R.pushQueue = () => {
+    if(R.role !== 'host') return;
+    const pt = window.__party;
+    const items = pt && pt.P.on ? pt.preview(12).map(v => v.turnFor ? { who: pt.singersText({ singers:[v.turnFor] }), title:'🤔 выберет в свой ход' } : { who: pt.singersText(v), title: v.title, thumb: v.thumb })
+                                : queue.slice(0, 12).map(v => ({ who:'', title:v.title, thumb:v.thumb }));
+    hostBroadcast({ t:'queue', items });
+  };
+  R.propose = v => { if(!R.sendHost) return toast('Нет связи с хозяином'); R.sendHost({ t:'propose', v:{ id:v.id, title:v.title, thumb:v.thumb, channel:v.channel||'' } }); toast('🎵 Отправлено хозяину: ' + v.title.slice(0, 50)); };
+  R.search = roomSearch;
+
+  // ---------- чат и реакции ----------
+  function addChat(who, text){
+    const box = $('chatList'); const d = document.createElement('div');
+    d.innerHTML = who ? `<b>${esc(who)}:</b> ${esc(text)}` : `<i>${esc(text)}</i>`;
+    box.appendChild(d); while(box.children.length > 80) box.firstChild.remove(); box.scrollTop = box.scrollHeight;
+  }
+  const sysChat = t => addChat(null, t);
+  function sendChat(){
+    const t = $('chatIn').value.trim(); if(!t) return; $('chatIn').value = '';
+    if(R.role === 'host'){ addChat(R.name, t); hostBroadcast({ t:'chat', who:R.name, text:t }); }
+    else if(R.sendHost) R.sendHost({ t:'chat', text:t });
+  }
+  $('chatForm').onsubmit = e => { e.preventDefault(); sendChat(); };
+  function showReact(e, who){
+    const make = doc => { const s = doc.createElement('div'); s.className = 'react'; s.textContent = e; s.style.left = (10 + Math.random()*80) + '%';
+      if(who){ const n = doc.createElement('small'); n.textContent = who; s.appendChild(n); } return s; };
+    const L = $('reactLayer'); const s = make(document); L.appendChild(s); setTimeout(() => s.remove(), 3200);
+    if(stage){ try{ const d = stage.w.document; let l2 = d.getElementById('reactLayer2');
+      if(!l2){ l2 = d.createElement('div'); l2.id = 'reactLayer2'; d.body.appendChild(l2); }
+      const s2 = make(d); l2.appendChild(s2); setTimeout(() => s2.remove(), 3200); }catch(err){} }
+  }
+  $('reactRow').onclick = e => {
+    const b = e.target.closest('[data-r]'); if(!b) return; const em = b.dataset.r;
+    if(R.role === 'host'){ showReact(em, R.name); hostBroadcast({ t:'react', e:em, who:R.name }); }
+    else if(R.sendHost) R.sendHost({ t:'react', e:em });
+  };
+
+  // ---------- окно комнаты ----------
+  function renderRoom(){
+    const inRoom = !!R.role;
+    $('roomBox').style.display = inRoom ? 'block' : 'none';
+    $('roomBtn').textContent = inRoom ? '🌐 Комната ●' : '🌐 Комната';
+    $('roomMembers').textContent = R.members.length ? R.members.join(', ') : '';
+    $('roomPing').textContent = R.role === 'guest' && R.rtt < 9999 ? 'связь ' + Math.round(R.rtt) + ' мс' : '';
+    if(R.role === 'host'){
+      $('roomBody').innerHTML = `<div class="hint">Отправьте эту ссылку гостям (WhatsApp, Telegram…). Они откроют её в браузере — ничего ставить не нужно.</div>
+        <input id="roomLinkIn" readonly value="${esc(roomLink())}" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10">
+        <div class="row" style="margin-top:10px"><button class="btn small" id="roomCopy">📋 Копировать</button>${navigator.share ? '<button class="btn small sec" id="roomShare">📤 Поделиться</button>' : ''}
+        <button class="btn small sec" id="roomClose">Закрыть комнату</button></div>
+        <div class="status" style="margin-top:10px">В комнате: ${esc(R.members.join(', ') || R.name)}</div>`;
+      $('roomCopy').onclick = () => { $('roomLinkIn').select(); navigator.clipboard.writeText(roomLink()).then(() => toast('Ссылка скопирована')).catch(() => { document.execCommand('copy'); toast('Ссылка скопирована'); }); };
+      const sh = $('roomShare'); if(sh) sh.onclick = () => navigator.share({ title:'Караоке 🎤', text:'Заходи к нам в караоке!', url: roomLink() }).catch(()=>{});
+      $('roomClose').onclick = () => { closeRoom(); $('roomModal').classList.remove('show'); };
+    } else if(R.role === 'guest'){
+      $('roomBody').innerHTML = `<div class="hint">Вы в гостях. Видео и заставки идут синхронно с хозяином. Выбирайте песни — они уйдут в общую очередь под вашим именем.</div>
+        <button class="btn small sec" id="roomLeave">Выйти из комнаты</button>`;
+      $('roomLeave').onclick = () => { location.href = location.pathname; };
+    } else {
+      $('roomBody').innerHTML = `<div class="hint">Караоке с друзьями в другом городе: создайте комнату и отправьте ссылку. У гостей будут то же видео, заставки «Поёт…», оценки и общий чат.</div>
+        <div class="row" style="flex-wrap:nowrap"><input id="roomMyName" placeholder="Ваше имя" value="${esc(R.name)}" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10">
+        <button class="btn" id="roomCreate">Создать комнату</button></div>`;
+      $('roomCreate').onclick = createRoom;
+    }
+  }
+  function closeRoom(){
+    clearInterval(R.syncT); try{ R.peer && R.peer.destroy(); }catch(e){} try{ R.bc && R.bc.close(); }catch(e){}
+    R.role = null; R.links = {}; R.members = []; renderRoom();
+  }
+  $('roomBtn').onclick = () => { renderRoom(); $('roomModal').classList.add('show'); };
+  $('roomModalClose').onclick = () => $('roomModal').classList.remove('show');
+  // хозяин: сразу рассылаем смену песни/паузу
+  R.onState = () => { if(R.role === 'host') hostSync(); };
+  // открыли по ссылке-приглашению
+  if(ROOM_PARAM){
+    $('joinName').value = R.name; $('roomJoin').classList.add('show');
+    $('joinGo').onclick = () => joinRoom(ROOM_PARAM);
+    $('joinName').onkeydown = e => { if(e.key === 'Enter') joinRoom(ROOM_PARAM); };
+  }
+  renderRoom();
+
 
   document.addEventListener('keydown', e => {
     if(e.target.tagName==='INPUT' || e.target.tagName==='SELECT') return;
@@ -760,6 +1054,7 @@
   }
   // добавить песню: в режиме вечеринки — выбранным певцам, иначе — в обычную очередь
   function addSong(v, opts = {}){
+    if(isGuest()){ window.__room.propose(v); return v; }
     if(P.on){
       const s = opts.singers || P.sel;
       if(!s.length){ toast('Сначала выберите сверху, кто поёт 👆', 3000); $('partyBar').classList.add('flash'); setTimeout(()=>$('partyBar').classList.remove('flash'), 1200); return null; }
@@ -1089,7 +1384,7 @@
   $('catNow').onclick = () => { if(current && current.id) openCatPick(current); else toast('Сейчас ничего не играет'); };
   // найти и сразу добавить первый вариант
   async function quickAdd(name){
-    if(!apiKey){ openKey(); return; }
+    if(!apiKey && !isGuest()){ openKey(); return; }
     if(P.on && !P.sel.length){ toast('Сначала выберите сверху, кто поёт 👆', 3000); return; }
     try{ const r = await cachedSearch(name); if(!r.length){ toast('Не нашлось караоке-версии 😕'); return; } addSong(r[0]); }
     catch(err){ toast(err.message, 4000); }

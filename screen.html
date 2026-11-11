@@ -137,6 +137,22 @@
   .qwho{font-size:12px;color:#ffb3cf;font-weight:700}
   #stageNote{position:absolute;inset:0;z-index:4;display:none;flex-direction:column;gap:8px;align-items:center;justify-content:center;background:#100d18;color:var(--muted);text-align:center}
   .stage-only{display:none}
+  #roomMirror{position:absolute;inset:0;z-index:7;pointer-events:none}
+  #roomMirror:empty{display:none}
+  #roomMirror .res-btns{display:none!important}
+  #roomMirror *{animation:none!important}
+  #roomMirror .main-only{display:none!important}
+  #roomMirror .stage-only{display:inline!important}
+  body:not(.guest) #playerWrap > #roomMirror{display:none}
+  #reactLayer,#reactLayer2{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:hidden}
+  #reactLayer2{position:fixed;z-index:40}
+  .react{position:absolute;bottom:4%;font-size:clamp(28px,8cqw,110px);animation:floatUp 3.1s ease-out forwards;text-align:center;line-height:1}
+  .react small{display:block;font-size:max(10px,.22em);color:#fff;text-shadow:0 1px 3px #000}
+  @keyframes floatUp{0%{bottom:4%;transform:scale(.6);opacity:0}12%{opacity:1;transform:scale(1.15)}100%{bottom:78%;transform:scale(1);opacity:0}}
+  #chatList{max-height:190px;overflow:auto;font-size:14px;line-height:1.45;background:#0c0a10;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  #chatList i{color:var(--muted)}
+  body.guest .host-only, body.guest #nextBtn, body.guest #pauseBtn, body.guest #gameBtn, body.guest #breakBtn, body.guest #catNow,
+  body.guest [data-tab="party"], body.guest #partyBar, body.guest label:has(#autoFs), body.guest .kbd{display:none!important}
   .kbd{font-size:12px;color:var(--muted);margin-top:8px}
   .ov .res-btns .btn,#result .res-btns .btn{font-size:clamp(11px,2.2cqw,20px);padding:clamp(6px,1.2cqw,14px) clamp(10px,2cqw,22px)}
   .ov,#result{padding:clamp(6px,2cqw,24px)}
