@@ -66,7 +66,7 @@ class Tuner extends AudioWorkletProcessor {
       this.w = (this.w + 1) % N;
     }
     if (this.sinceDet >= 256 / this.ds * 2) { this.sinceDet = 0; this.detect(); }
-    if (currentTime - this.lastMsg > 0.12) { this.lastMsg = currentTime; this.port.postMessage({ voiced: this.voiced, f0: this.f0, target: this.target }); }
+    if (currentTime - this.lastMsg > 0.06) { this.lastMsg = currentTime; this.port.postMessage({ voiced: this.voiced, f0: this.f0, target: this.target }); }
     return true;
   }
 }

@@ -77,6 +77,22 @@
   .toast.show{opacity:1}
   .spin{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;vertical-align:middle}
   @keyframes s{to{transform:rotate(360deg)}}
+  #result{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;flex-direction:column;
+    background:radial-gradient(circle at 50% 30%,rgba(124,92,255,.55),rgba(15,13,20,.96) 70%);text-align:center;padding:16px}
+  #result.show{display:flex;animation:pop .35s ease-out}
+  @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  .res-h{font-size:clamp(18px,3vw,40px);font-weight:800;margin-bottom:8px}
+  .res-row{display:flex;gap:clamp(10px,3vw,48px);justify-content:center;flex-wrap:wrap}
+  .res-card{padding:8px clamp(8px,2vw,28px);border-radius:18px}
+  .res-card.win{background:rgba(255,61,127,.15);box-shadow:0 0 0 2px var(--accent)}
+  .crown{font-size:clamp(12px,1.6vw,22px);font-weight:700;color:#ffd23d}
+  .res-name{font-size:clamp(13px,2vw,28px);color:#e6dcff}
+  .res-score{font-size:clamp(44px,11vw,180px);font-weight:900;line-height:1;background:linear-gradient(90deg,#ffd23d,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .res-stars{font-size:clamp(16px,3.4vw,52px);color:#ffd23d;letter-spacing:4px}
+  .res-title{font-size:clamp(12px,2vw,30px);font-weight:700;margin:4px 0}
+  .res-parts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:clamp(10px,1.3vw,18px);color:var(--muted)}
+  .res-song{margin-top:8px;font-size:clamp(10px,1.3vw,18px);color:var(--muted)}
+  .res-btns{display:flex;gap:10px;margin-top:12px}
   .kbd{font-size:12px;color:var(--muted);margin-top:8px}
 </style>
 </head>
@@ -101,15 +117,26 @@
       <div id="playerWrap">
         <div id="player"></div>
         <div class="empty" id="emptyPlayer">Здесь будет видео с текстом песни</div>
+        <div id="result"><div id="resultBody"></div><div class="res-btns"><button class="btn" id="resultNext">Дальше ▶</button><button class="btn sec" id="resultStay">Подождать</button></div></div>
       </div>
       <div class="now" id="now"></div>
       <div class="row">
         <button class="btn small" id="fsBtn">⛶ На весь экран</button>
         <button class="btn small sec" id="nextBtn">⏭ Следующая</button>
         <button class="btn small sec" id="pauseBtn">⏯ Пауза</button>
+        <button class="btn small sec" id="gameBtn">🏆 Игра</button>
       </div>
       <label class="switch"><input type="checkbox" id="autoFs" checked> Сразу на весь экран при запуске песни</label>
       <div class="kbd">Клавиши: F — весь экран, N — следующая, пробел — пауза (когда фокус не в поиске)</div>
+    </div>
+
+    <div class="sec-box" id="gameBox" style="display:none">
+      <h3>🏆 Игра — рекорды вечера</h3>
+      <div class="status" style="margin:-4px 0 8px">Пойте с включённым микрофоном — в конце песни будет оценка. Два микрофона = батл.</div>
+      <div class="row" style="flex-wrap:nowrap"><input id="name1" placeholder="Имя (микр. 1)" style="flex:1;min-width:0;padding:8px;border-radius:10px;background:#0c0a10;border:1px solid var(--line)"><input id="name2" placeholder="Имя (микр. 2)" style="flex:1;min-width:0;padding:8px;border-radius:10px;background:#0c0a10;border:1px solid var(--line)"></div>
+      <ul class="queue" id="board" style="margin-top:8px"></ul>
+      <div class="status" id="boardEmpty">Пока никто не пел.</div>
+      <button class="btn small sec" id="boardClear" style="margin-top:8px">Очистить рекорды</button>
     </div>
 
     <div class="sec-box">
@@ -302,7 +329,10 @@
       playerVars:{ autoplay:1, rel:0, modestbranding:1, playsinline:1, fs:0 },
       events:{
         onReady: () => { playerReady = true; window.__applyMusic && window.__applyMusic(); if(pending){ const p=pending; pending=null; load(p); } },
-        onStateChange: ev => { if(ev.data === YT.PlayerState.ENDED){ playNext(false); } },
+        onStateChange: ev => {
+          const g = window.__game; if(g) g.playing = ev.data === YT.PlayerState.PLAYING;
+          if(ev.data === YT.PlayerState.ENDED){ const shown = window.__showResult && window.__showResult(current && current.title, () => playNext(false)); if(!shown) playNext(false); }
+        },
         onError: ev => {
           const v = current;
           toast('Это видео нельзя проиграть здесь — переключаю на следующее', 3500);
@@ -316,6 +346,9 @@
 
   function load(v){
     current = v;
+    if(window.__game) window.__game.reset();
+    clearInterval(resultTimer);
+    $('result').classList.remove('show');
     $('emptyPlayer').style.display='none';
     $('now').innerHTML = '🎶 <b>'+esc(v.title)+'</b>';
     document.title = '🎤 ' + v.title;
@@ -340,7 +373,7 @@
   }
   function goFs(){ const w=$('playerWrap'); if(!document.fullscreenElement && w.requestFullscreen) w.requestFullscreen().catch(()=>{}); }
   $('fsBtn').onclick = goFs;
-  $('nextBtn').onclick = () => playNext(true);
+  $('nextBtn').onclick = () => { const g=window.__game; if(g && g.on && g.s && Math.max(g.s[0].play,g.s[1].play) > 45 && !$('result').classList.contains('show')){ if(window.__showResult(current && current.title, () => playNext(false))) return; } playNext(true); };
   $('pauseBtn').onclick = () => { if(!playerReady) return; const s=player.getPlayerState(); s===1 ? player.pauseVideo() : player.playVideo(); };
   $('autoFs').checked = store.get('autoFs', true);
   $('autoFs').onchange = () => store.set('autoFs', $('autoFs').checked);
@@ -352,6 +385,115 @@
     else if(e.key===' '){ e.preventDefault(); $('pauseBtn').click(); }
     else if(e.key==='/' ){ e.preventDefault(); $('q').focus(); $('q').select(); }
   });
+
+  // ---------- Игровой режим: оценка исполнения ----------
+  const game = {
+    on: store.get('game', false),
+    playing: false,
+    s: null,
+    reset(){ this.s = [0,1].map(() => ({ play:0, sing:0, cents:[], db:[] })); },
+    // вызывается ~60 раз/сек для каждого микрофона
+    tick(i, rms, dt){
+      if(!this.on || !this.playing || !this.s) return;
+      const st = this.s[i]; st.play += dt;
+      if(rms > 0.015){ st.sing += dt; st.db.push(20*Math.log10(rms)); }
+      st.lastRms = rms;
+    },
+    pitch(i, d){
+      if(!this.on || !this.playing || !this.s || !d.voiced) return;
+      const st = this.s[i]; if((st.lastRms||0) < 0.015) return;
+      const dev = Math.abs(d.f0 - Math.round(d.f0)) * 100; // отклонение от ближайшей ноты, центы
+      st.cents.push(dev);
+    },
+    score(st){
+      if(!st || st.play < 10) return null;
+      const act = st.sing / st.play;
+      if(act < 0.08) return null;                        // почти не пел
+      const activity = Math.min(100, act / 0.55 * 100);
+      let pitch = null;
+      if(st.cents.length > 20){
+        const c = [...st.cents].sort((a,b)=>a-b);
+        const mean = c.slice(0, Math.floor(c.length*0.9)).reduce((a,b)=>a+b,0) / Math.max(1, Math.floor(c.length*0.9)); // без 10% худших (переходы между нотами)
+        pitch = Math.max(0, Math.min(100, (27 - mean) / 14 * 100));
+      }
+      let conf = 70;
+      if(st.db.length > 30){
+        const m = st.db.reduce((a,b)=>a+b,0)/st.db.length;
+        const sd = Math.sqrt(st.db.reduce((a,b)=>a+(b-m)*(b-m),0)/st.db.length);
+        conf = Math.max(0, Math.min(100, (13 - sd) / 8 * 100));
+      }
+      const raw = pitch === null ? (activity*0.7 + conf*0.3) : (pitch*0.55 + activity*0.3 + conf*0.15);
+      const total = Math.round(30 + raw * 0.7);           // вечеринка: от 30 до 100
+      return { total, pitch: pitch===null ? null : Math.round(pitch), activity: Math.round(activity), conf: Math.round(conf) };
+    }
+  };
+  const TITLES = [
+    [96, '🌟 Звезда эстрады! Стадион аплодирует стоя'],
+    [88, '🎤 Вам бы на большую сцену'],
+    [80, '🔥 Звезда караоке-бара'],
+    [70, '😎 Душа компании'],
+    [60, '🙂 Уверенно, с огоньком'],
+    [50, '🚿 Поёт в душе — и правильно делает'],
+    [40, '🚨 Соседи вызвали полицию'],
+    [0,  '🐻 Медведь на ухо наступил… дважды'],
+  ];
+  const titleFor = s => TITLES.find(t => s >= t[0])[1];
+  const stars = s => '★★★★★'.slice(0, Math.round(s/20)) + '☆☆☆☆☆'.slice(0, 5-Math.round(s/20));
+  const playerName = i => ($('name'+(i+1)).value.trim() || ('Микрофон ' + (i+1)));
+
+  function renderGameBtn(){ $('gameBtn').classList.toggle('sec', !game.on); $('gameBtn').textContent = game.on ? '🏆 Игра: ВКЛ' : '🏆 Игра'; $('gameBox').style.display = game.on ? 'block' : 'none'; }
+  $('gameBtn').onclick = () => {
+    game.on = !game.on; store.set('game', game.on); renderGameBtn();
+    if(game.on){ game.reset(); toast(nodes ? 'Игровой режим включён — оценка будет в конце песни' : 'Игровой режим включён. Не забудьте включить микрофон!', 3500); }
+  };
+  ['name1','name2'].forEach(id => { $(id).value = store.get(id, ''); $(id).addEventListener('input', () => { store.set(id, $(id).value); renderBoard(); }); });
+
+  // таблица рекордов вечера
+  let board = store.get('board', []);
+  function renderBoard(){
+    const top = [...board].sort((a,b)=>b.score-a.score).slice(0, 10);
+    $('board').innerHTML = top.map((r,i)=>`<li><b>${i+1}.</b> <span class="qt">${esc(r.name)} — ${esc(r.song)}</span> <b style="color:var(--accent)">${r.score}</b></li>`).join('');
+    $('boardEmpty').style.display = top.length ? 'none' : 'block';
+  }
+  $('boardClear').onclick = () => { board = []; store.set('board', board); renderBoard(); };
+  renderBoard(); renderGameBtn();
+
+  // экран с результатом; onDone — что сделать после
+  let resultTimer = 0;
+  function showResult(song, onDone){
+    if(!game.on || !game.s) return false;
+    const active = [0,1].filter(i => $('on'+(i+1)).checked);
+    const res = active.map(i => ({ i, name: playerName(i), r: game.score(game.s[i]) })).filter(x => x.r);
+    if(!res.length) return false;
+    const duel = res.length > 1;
+    const best = Math.max(...res.map(x=>x.r.total));
+    $('resultBody').innerHTML = (duel ? '<div class="res-h">⚔️ Батл!</div>' : '') + '<div class="res-row">' + res.map(x => `
+      <div class="res-card ${duel && x.r.total===best ? 'win' : ''}">
+        ${duel && x.r.total===best ? '<div class="crown">👑 Победитель</div>' : ''}
+        <div class="res-name">${esc(x.name)}</div>
+        <div class="res-score" data-to="${x.r.total}">0</div>
+        <div class="res-stars">${stars(x.r.total)}</div>
+        <div class="res-title">${titleFor(x.r.total)}</div>
+        <div class="res-parts">
+          ${x.r.pitch!==null ? `<span>🎯 Чистота ${x.r.pitch}</span>` : ''}
+          <span>🎤 Активность ${x.r.activity}</span><span>💪 Уверенность ${x.r.conf}</span>
+        </div>
+      </div>`).join('') + '</div><div class="res-song">' + esc(song || '') + '</div>';
+    res.forEach(x => { board.push({ name: x.name, song: (song||'').replace(/\s*[\(\[].*?[\)\]]/g,'').slice(0,60), score: x.r.total, t: Date.now() }); });
+    store.set('board', board); renderBoard();
+    $('result').classList.add('show');
+    // анимация счёта
+    document.querySelectorAll('.res-score').forEach(el => { const to=+el.dataset.to; let v=0; const st=performance.now();
+      const f = n => { v = Math.min(to, Math.round(to * Math.min(1,(n-st)/1600))); el.textContent=v; if(v<to) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+    let left = 12; $('resultNext').textContent = 'Дальше ▶ (' + left + ')';
+    clearInterval(resultTimer);
+    const done = () => { clearInterval(resultTimer); $('result').classList.remove('show'); onDone && onDone(); };
+    resultTimer = setInterval(() => { left--; $('resultNext').textContent = 'Дальше ▶ (' + left + ')'; if(left<=0) done(); }, 1000);
+    $('resultNext').onclick = done;
+    $('resultStay').onclick = () => { clearInterval(resultTimer); $('resultNext').textContent = 'Дальше ▶'; };
+    return true;
+  }
+  window.__game = game; window.__showResult = showResult;
 
   // ---------- Microphones (2 входа), эффекты, автотюн ----------
   let ctx=null, stream=null, nodes=null, meterRaf=0, revBufKey='', workletReady=null;
@@ -478,6 +620,7 @@
       tuner = new AudioWorkletNode(ctx, 'tuner', { numberOfInputs:1, numberOfOutputs:1, outputChannelCount:[1], channelCount:1, channelCountMode:'explicit' });
       tuner.port.onmessage = e => {
         const d = e.data, el = $('atNote'+(idx+1));
+        game.pitch(idx, d);
         if(!$('at'+(idx+1)).checked){ el.textContent=''; return; }
         el.textContent = d.voiced ? `${noteName(d.f0)} → ${noteName(d.target)}` : '…';
       };
@@ -552,6 +695,7 @@
         m.analyser.getFloatTimeDomainData(data);
         let sum=0, peak=0; for(const x of data){ sum += x*x; const a=Math.abs(x); if(a>peak) peak=a; }
         const rms = Math.sqrt(sum/data.length);
+        game.tick(i, rms, dt);
         $('meter'+(i+1)).style.width = Math.min(100, peak*140)+'%';
         if($('agc').checked && rms > GATE){
           const want = Math.max(0.5, Math.min(3.5, TARGET / rms));
