@@ -1,6 +1,6 @@
 {
-  "name": "Караоке",
-  "short_name": "Караоке",
+  "name": "Пой-Пой — караоке",
+  "short_name": "Пой-Пой",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

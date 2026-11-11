@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Караоке</title>
+<title>Пой-Пой</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-512.png">
@@ -165,7 +165,7 @@
 <body>
 <div class="app">
   <header>
-    <div class="logo">🎤 Кара<span>оке</span></div>
+    <div class="logo">🎤 Пой-<span>Пой</span></div>
     <form class="search" id="searchForm">
       <input id="q" placeholder="Название песни или исполнитель…" autocomplete="off" autofocus>
       <button class="btn" type="submit">Найти</button>
@@ -348,7 +348,7 @@
   <button class="btn small sec" id="roomModalClose" style="margin-top:14px">Закрыть</button>
 </div></div>
 <div class="modal" id="roomJoin"><div class="box">
-  <h2 id="joinTitle">🎤 Вас пригласили в караоке!</h2>
+  <h2 id="joinTitle">🎤 Вас пригласили в Пой-Пой!</h2>
   <div class="hint">Видео, заставки и оценки будут идти вместе с хозяином комнаты. Как вас зовут?</div>
   <div class="row" style="flex-wrap:nowrap"><input id="joinName" placeholder="Ваше имя" autocomplete="off" style="flex:1;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:#0c0a10;font-size:16px">
   <button class="btn" id="joinGo">Войти</button></div>
@@ -671,7 +671,7 @@
   function hostBroadcast(d){ Object.values(R.links).forEach(l => { try{ l.send(d); }catch(e){} }); }
   function hostMembers(){ R.members = [R.name || 'Хозяин', ...Object.values(R.links).map(l => l.name || 'гость')]; hostBroadcast({ t:'members', list:R.members }); renderRoom(); }
   async function createRoom(){
-    R.title = ($('roomTitleIn').value.trim() || 'Караоке у ' + ($('roomMyName').value.trim() || 'друзей')).slice(0, 60); store.set('roomTitle', R.title);
+    R.title = ($('roomTitleIn').value.trim() || 'Пой-Пой у ' + ($('roomMyName').value.trim() || 'друзей')).slice(0, 60); store.set('roomTitle', R.title);
     const n = $('roomMyName').value.trim(); if(!n){ $('roomMyName').focus(); toast('Впишите своё имя'); return; } R.name = n; store.set('myName', n);
     R.id = (new URLSearchParams(location.search).has('local') ? 'local-' : '') + rnd(6);
     R.role = 'host';
@@ -865,7 +865,7 @@
         <button class="btn small sec" id="roomClose">Закрыть комнату</button></div>
         <div class="status" style="margin-top:10px">В комнате: ${esc(R.members.join(', ') || R.name)}</div>`;
       $('roomCopy').onclick = () => { $('roomLinkIn').select(); navigator.clipboard.writeText(roomLink()).then(() => toast('Ссылка скопирована')).catch(() => { document.execCommand('copy'); toast('Ссылка скопирована'); }); };
-      const sh = $('roomShare'); if(sh) sh.onclick = () => navigator.share({ title:'Караоке 🎤', text:'Заходи к нам в караоке «' + (R.title||'') + '»! 🎤', url: roomLink() }).catch(()=>{});
+      const sh = $('roomShare'); if(sh) sh.onclick = () => navigator.share({ title:'Пой-Пой 🎤', text:'Заходи к нам в Пой-Пой «' + (R.title||'') + '»! 🎤', url: roomLink() }).catch(()=>{});
       $('roomClose').onclick = () => { closeRoom(); $('roomModal').classList.remove('show'); };
     } else if(R.role === 'guest'){
       $('roomBody').innerHTML = `<div class="hint">Вы в гостях. Видео и заставки идут синхронно с хозяином. Выбирайте песни — они уйдут в общую очередь под вашим именем.</div>
