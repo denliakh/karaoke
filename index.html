@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Караоке</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="theme-color" content="#0f0d14">
+<style>
+  :root{
+    --bg:#0f0d14; --panel:#1a1722; --panel2:#231f2e; --line:#2e2a3b;
+    --text:#f3eefc; --muted:#a39cb5; --accent:#ff3d7f; --accent2:#7c5cff; --ok:#3ddc97;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  .app{display:grid;grid-template-columns:1fr 420px;grid-template-rows:auto 1fr;height:100vh}
+  header{grid-column:1/3;display:flex;gap:14px;align-items:center;padding:16px 20px;
+    border-bottom:1px solid var(--line);background:linear-gradient(90deg,#1d1529,#14111b)}
+  .logo{font-weight:800;font-size:22px;letter-spacing:.5px;white-space:nowrap}
+  .logo span{color:var(--accent)}
+  .search{flex:1;display:flex;gap:10px}
+  .search input{flex:1;padding:14px 18px;font-size:20px;border-radius:14px;border:2px solid var(--line);
+    background:#0c0a10;outline:none}
+  .search input:focus{border-color:var(--accent2)}
+  .btn{padding:12px 20px;border-radius:12px;border:none;background:var(--accent);font-weight:700;font-size:17px}
+  .btn.sec{background:var(--panel2);border:1px solid var(--line)}
+  .btn.small{padding:8px 12px;font-size:14px;border-radius:10px}
+  .btn:disabled{opacity:.4;cursor:default}
+  main{overflow:auto;padding:18px 20px}
+  .hint{color:var(--muted);font-size:15px;margin:4px 0 14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#000;cursor:pointer}
+  .card .t{padding:10px 12px 4px;font-size:15px;line-height:1.3;flex:1}
+  .card .c{padding:0 12px 8px;font-size:12px;color:var(--muted)}
+  .card .a{display:flex;gap:8px;padding:0 12px 12px}
+  .card .a .btn{flex:1}
+  aside{border-left:1px solid var(--line);overflow:auto;display:flex;flex-direction:column}
+  .sec-box{padding:14px 16px;border-bottom:1px solid var(--line)}
+  .sec-box h3{margin:0 0 10px;font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  #playerWrap{position:relative;background:#000;aspect-ratio:16/9;border-radius:12px;overflow:hidden}
+  #playerWrap:fullscreen{border-radius:0;aspect-ratio:auto;width:100vw;height:100vh}
+  #player{position:absolute;inset:0;width:100%;height:100%}
+  .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:20px}
+  .now{margin:10px 0 8px;font-size:15px;min-height:20px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .queue{list-style:none;margin:0;padding:0}
+  .queue li{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .queue li img{width:64px;height:36px;object-fit:cover;border-radius:6px}
+  .queue li .qt{flex:1;line-height:1.25}
+  .queue li button{background:none;border:none;color:var(--muted);font-size:18px;padding:4px 6px}
+  .queue li button:hover{color:var(--accent)}
+  label.sl{display:grid;grid-template-columns:120px 1fr 44px;gap:8px;align-items:center;font-size:14px;margin:8px 0}
+  label.sl output{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  select{width:100%;padding:8px;border-radius:10px;background:#0c0a10;border:1px solid var(--line)}
+  .switch{display:flex;align-items:center;gap:10px;font-size:15px;margin:6px 0;cursor:pointer}
+  .switch input{width:20px;height:20px;accent-color:var(--accent)}
+  .meter{height:8px;background:#0c0a10;border-radius:4px;overflow:hidden;margin:8px 0}
+  .meter div{height:100%;width:0;background:linear-gradient(90deg,var(--ok),#ffd23d,var(--accent));transition:width .05s}
+  .status{font-size:13px;color:var(--muted);margin-top:6px}
+  .err{color:#ff8a8a}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+  .modal.show{display:flex}
+  .modal .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;width:min(640px,92vw)}
+  .modal h2{margin:0 0 10px}
+  .modal ol{padding-left:20px;line-height:1.6;color:#d8d1e8}
+  .modal input{width:100%;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:#0c0a10;font-size:16px;margin:10px 0}
+  a{color:#b9a6ff}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);
+    padding:12px 18px;border-radius:12px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:60}
+  .toast.show{opacity:1}
+  .spin{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;vertical-align:middle}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .kbd{font-size:12px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">🎤 Кара<span>оке</span></div>
+    <form class="search" id="searchForm">
+      <input id="q" placeholder="Название песни или исполнитель…" autocomplete="off" autofocus>
+      <button class="btn" type="submit">Найти</button>
+    </form>
+    <button class="btn sec" id="settingsBtn" title="Ключ YouTube">⚙️</button>
+  </header>
+
+  <main>
+    <div class="hint" id="hint">Введите песню — я ищу только караоке-версии на YouTube. Нажмите на картинку, чтобы сразу петь, или «В очередь».</div>
+    <div class="grid" id="results"></div>
+  </main>
+
+  <aside>
+    <div class="sec-box">
+      <div id="playerWrap">
+        <div id="player"></div>
+        <div class="empty" id="emptyPlayer">Здесь будет видео с текстом песни</div>
+      </div>
+      <div class="now" id="now"></div>
+      <div class="row">
+        <button class="btn small" id="fsBtn">⛶ На весь экран</button>
+        <button class="btn small sec" id="nextBtn">⏭ Следующая</button>
+        <button class="btn small sec" id="pauseBtn">⏯ Пауза</button>
+      </div>
+      <label class="switch"><input type="checkbox" id="autoFs" checked> Сразу на весь экран при запуске песни</label>
+      <div class="kbd">Клавиши: F — весь экран, N — следующая, пробел — пауза (когда фокус не в поиске)</div>
+    </div>
+
+    <div class="sec-box">
+      <h3>Очередь</h3>
+      <ul class="queue" id="queue"></ul>
+      <div class="status" id="queueEmpty">Пусто. Добавляйте песни кнопкой «В очередь».</div>
+    </div>
+
+    <div class="sec-box">
+      <h3>Громкость</h3>
+      <label class="sl">🎵 Минус <input type="range" id="music" min="0" max="100"><output id="musicV"></output></label>
+      <label class="sl">🎤 Голоса <input type="range" id="voice" min="0" max="200"><output id="voiceV"></output></label>
+    </div>
+
+    <div class="sec-box">
+      <h3>Микрофоны</h3>
+      <label class="switch"><input type="checkbox" id="micOn"> Включить микрофоны</label>
+      <select id="micSel"><option value="">Микрофон по умолчанию</option></select>
+
+      <div id="mic1box" style="margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:12px">
+        <label class="switch" style="margin-top:0"><input type="checkbox" id="on1" checked> <b>Микрофон 1</b> (вход 1)</label>
+        <div class="meter"><div id="meter1"></div></div>
+        <label class="sl">Громкость <input type="range" id="vol1" min="0" max="200"><output id="vol1V"></output></label>
+        <label class="switch"><input type="checkbox" id="at1"> Автотюн <span class="status" id="atNote1" style="margin:0 0 0 auto"></span></label>
+      </div>
+      <div id="mic2box" style="margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:12px">
+        <label class="switch" style="margin-top:0"><input type="checkbox" id="on2"> <b>Микрофон 2</b> (вход 2, дуэт)</label>
+        <div class="meter"><div id="meter2"></div></div>
+        <label class="sl">Громкость <input type="range" id="vol2" min="0" max="200"><output id="vol2V"></output></label>
+        <label class="switch"><input type="checkbox" id="at2"> Автотюн <span class="status" id="atNote2" style="margin:0 0 0 auto"></span></label>
+      </div>
+    </div>
+
+    <div class="sec-box">
+      <h3>Звук голоса</h3>
+      <div class="row" style="margin:0 0 6px">
+        <button class="btn small" data-preset="bar">🍸 Караоке-бар</button>
+        <button class="btn small sec" data-preset="studio">🎧 Студия</button>
+        <button class="btn small sec" data-preset="hall">🏛 Большой зал</button>
+        <button class="btn small sec" data-preset="dry">Без эффектов</button>
+      </div>
+      <label class="switch"><input type="checkbox" id="blend" checked> Вписать голос в музыку (эквалайзер)</label>
+      <label class="switch"><input type="checkbox" id="agc" checked> Авто-громкость голоса</label>
+      <label class="switch"><input type="checkbox" id="comp" checked> Компрессор (ровнее звучит)</label>
+      <details style="margin-top:6px"><summary style="cursor:pointer;color:var(--muted)">Тонкая настройка эха и зала</summary>
+        <label class="sl">Эхо <input type="range" id="echo" min="0" max="100"><output id="echoV"></output></label>
+        <label class="sl">Длина эха <input type="range" id="echoTime" min="80" max="600"><output id="echoTimeV"></output></label>
+        <label class="sl">Зал (реверб) <input type="range" id="rev" min="0" max="100"><output id="revV"></output></label>
+      </details>
+    </div>
+
+    <div class="sec-box">
+      <h3>Автотюн</h3>
+      <label class="sl">Сила <input type="range" id="atStrength" min="0" max="100"><output id="atStrengthV"></output></label>
+      <div class="status" style="margin:-4px 0 8px">30–50% — естественно подправляет. 100% — эффект «робота», как у рэперов.</div>
+      <select id="atKey"></select>
+      <div class="status">Если знаете тональность песни — выберите её, звучит точнее. Не знаете — оставьте «Все ноты».</div>
+      <div class="status" id="micStatus" style="margin-top:12px">Чтобы голос звучал вместе с музыкой, выключите Direct Monitor на аудиокарте.</div>
+    </div>
+  </aside>
+</div>
+
+<div class="modal" id="keyModal">
+  <div class="box">
+    <h2>Ключ YouTube</h2>
+    <div>Нужен один раз, чтобы программа могла искать песни. Бесплатно.</div>
+    <ol>
+      <li>Откройте <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">console.cloud.google.com → YouTube Data API v3</a> (выберите или создайте проект) и нажмите <b>Enable</b>.</li>
+      <li>Зайдите в <a href="https://console.cloud.google.com/apis/credentials" target="_blank">APIs &amp; Services → Credentials</a> → <b>Create credentials → API key</b> (или возьмите существующий ключ этого проекта).</li>
+      <li>Вставьте ключ ниже (он начинается с <code>AIza</code>).</li>
+    </ol>
+    <input id="keyInput" placeholder="AIza…" autocomplete="off">
+    <div class="row">
+      <button class="btn" id="keySave">Сохранить и проверить</button>
+      <button class="btn sec" id="keyClose">Закрыть</button>
+    </div>
+    <div class="status" id="keyStatus"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem('krk_'+k); return v===null ? d : JSON.parse(v);}catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem('krk_'+k, JSON.stringify(v)); }catch(e){} }
+  };
+  const toast = (msg, ms=2600) => { const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'), ms); };
+  const decode = s => { const t=document.createElement('textarea'); t.innerHTML=s; return t.value; };
+  const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // ---------- API key ----------
+  let apiKey = store.get('key', '');
+  const openKey = () => { $('keyInput').value = apiKey; $('keyStatus').textContent=''; $('keyModal').classList.add('show'); };
+  $('settingsBtn').onclick = openKey;
+  $('keyClose').onclick = () => $('keyModal').classList.remove('show');
+  $('keySave').onclick = async () => {
+    const k = $('keyInput').value.trim();
+    if(!k){ $('keyStatus').textContent='Вставьте ключ.'; return; }
+    $('keyStatus').innerHTML = '<span class="spin"></span> Проверяю…';
+    try{
+      await ytSearch('тест', k, 1);
+      apiKey = k; store.set('key', k);
+      $('keyStatus').innerHTML = '<span style="color:var(--ok)">✓ Работает!</span>';
+      setTimeout(()=>{ $('keyModal').classList.remove('show'); $('q').focus(); }, 700);
+    }catch(e){ $('keyStatus').innerHTML = '<span class="err">'+esc(e.message)+'</span>'; }
+  };
+  if(!apiKey) openKey();
+
+  // ---------- Search ----------
+  async function ytSearch(q, key, max=24){
+    const p = new URLSearchParams({ part:'snippet', type:'video', maxResults:String(max), videoEmbeddable:'true',
+      relevanceLanguage:'ru', q: q + ' караоке', key });
+    const r = await fetch('https://www.googleapis.com/youtube/v3/search?' + p);
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok){
+      const reason = j?.error?.errors?.[0]?.reason || '';
+      const msg = j?.error?.message || ('Ошибка ' + r.status);
+      if(reason==='quotaExceeded') throw new Error('Лимит поисков на сегодня исчерпан (около 100 в день). Завтра снова заработает.');
+      if(reason==='keyInvalid' || /API key not valid/i.test(msg)) throw new Error('Ключ не подходит. Проверьте, что скопировали его целиком.');
+      if(/has not been used|disabled/i.test(msg)) throw new Error('В этом проекте Google не включён YouTube Data API v3. Включите его (шаг 1) и подождите пару минут.');
+      if(/referer|blocked/i.test(msg)) throw new Error('Ключ ограничен настройками. В Credentials уберите ограничения ключа или добавьте YouTube Data API v3 в разрешённые.');
+      throw new Error(msg);
+    }
+    return (j.items||[]).filter(i=>i.id&&i.id.videoId).map(i => ({
+      id: i.id.videoId,
+      title: decode(i.snippet.title),
+      channel: decode(i.snippet.channelTitle||''),
+      thumb: (i.snippet.thumbnails.high||i.snippet.thumbnails.medium||i.snippet.thumbnails.default).url
+    }));
+  }
+
+  let lastResults = [];
+  $('searchForm').onsubmit = async e => {
+    e.preventDefault();
+    const q = $('q').value.trim(); if(!q) return;
+    if(!apiKey){ openKey(); return; }
+    $('hint').innerHTML = '<span class="spin"></span> Ищу «'+esc(q)+'»…';
+    $('results').innerHTML = '';
+    try{
+      lastResults = await ytSearch(q, apiKey);
+      $('hint').textContent = lastResults.length ? 'Нажмите на картинку — песня начнётся сразу. «В очередь» — сыграет после текущей.' : 'Ничего не нашлось. Попробуйте написать иначе (например, только название песни).';
+      renderResults();
+    }catch(err){ $('hint').innerHTML = '<span class="err">'+esc(err.message)+'</span>'; }
+  };
+
+  function renderResults(){
+    $('results').innerHTML = lastResults.map((v,i) => `
+      <div class="card">
+        <img src="${v.thumb}" data-play="${i}" alt="">
+        <div class="t">${esc(v.title)}</div>
+        <div class="c">${esc(v.channel)}</div>
+        <div class="a">
+          <button class="btn small" data-play="${i}">▶ Петь</button>
+          <button class="btn small sec" data-add="${i}">+ В очередь</button>
+        </div>
+      </div>`).join('');
+  }
+  $('results').onclick = e => {
+    const p = e.target.closest('[data-play]'), a = e.target.closest('[data-add]');
+    if(p){ playNow(lastResults[+p.dataset.play], true); }
+    else if(a){ queue.push(lastResults[+a.dataset.add]); saveQueue(); renderQueue(); toast('Добавлено в очередь'); if(!current) playNext(false); }
+  };
+
+  // ---------- Queue ----------
+  let queue = store.get('queue', []);
+  let current = null;
+  const saveQueue = () => store.set('queue', queue);
+  function renderQueue(){
+    $('queue').innerHTML = queue.map((v,i)=>`
+      <li><img src="${v.thumb}" alt=""><div class="qt">${esc(v.title)}</div>
+      <button data-up="${i}" title="Выше">↑</button><button data-del="${i}" title="Убрать">✕</button></li>`).join('');
+    $('queueEmpty').style.display = queue.length ? 'none' : 'block';
+  }
+  $('queue').onclick = e => {
+    const d = e.target.closest('[data-del]'), u = e.target.closest('[data-up]');
+    if(d){ queue.splice(+d.dataset.del,1); }
+    if(u && +u.dataset.up>0){ const i=+u.dataset.up; [queue[i-1],queue[i]]=[queue[i],queue[i-1]]; }
+    saveQueue(); renderQueue();
+  };
+  renderQueue();
+
+  // ---------- Player ----------
+  let player = null, playerReady = false, pending = null;
+  window.onYouTubeIframeAPIReady = () => {
+    player = new YT.Player('player', {
+      width:'100%', height:'100%',
+      playerVars:{ autoplay:1, rel:0, modestbranding:1, playsinline:1, fs:0 },
+      events:{
+        onReady: () => { playerReady = true; window.__applyMusic && window.__applyMusic(); if(pending){ const p=pending; pending=null; load(p); } },
+        onStateChange: ev => { if(ev.data === YT.PlayerState.ENDED){ playNext(false); } },
+        onError: ev => {
+          const v = current;
+          toast('Это видео нельзя проиграть здесь — переключаю на следующее', 3500);
+          if(v){ $('now').innerHTML = 'Не играет здесь: <a href="https://www.youtube.com/watch?v='+v.id+'" target="_blank">открыть на YouTube</a>'; }
+          setTimeout(()=>playNext(false), 2500);
+        }
+      }
+    });
+  };
+  const tag = document.createElement('script'); tag.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(tag);
+
+  function load(v){
+    current = v;
+    $('emptyPlayer').style.display='none';
+    $('now').innerHTML = '🎶 <b>'+esc(v.title)+'</b>';
+    document.title = '🎤 ' + v.title;
+    if(!playerReady){ pending = v; return; }
+    player.loadVideoById(v.id);
+    window.__applyMusic && window.__applyMusic();
+  }
+  function playNow(v, gesture){
+    if(gesture && $('autoFs').checked) goFs();
+    load(v);
+  }
+  function playNext(gesture){
+    if(!queue.length){
+      current = null;
+      if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+      $('now').textContent = 'Очередь закончилась — найдите следующую песню.';
+      return;
+    }
+    const v = queue.shift(); saveQueue(); renderQueue();
+    if(gesture && $('autoFs').checked) goFs();
+    load(v);
+  }
+  function goFs(){ const w=$('playerWrap'); if(!document.fullscreenElement && w.requestFullscreen) w.requestFullscreen().catch(()=>{}); }
+  $('fsBtn').onclick = goFs;
+  $('nextBtn').onclick = () => playNext(true);
+  $('pauseBtn').onclick = () => { if(!playerReady) return; const s=player.getPlayerState(); s===1 ? player.pauseVideo() : player.playVideo(); };
+  $('autoFs').checked = store.get('autoFs', true);
+  $('autoFs').onchange = () => store.set('autoFs', $('autoFs').checked);
+
+  document.addEventListener('keydown', e => {
+    if(e.target.tagName==='INPUT' || e.target.tagName==='SELECT') return;
+    if(e.key==='f' || e.key==='F' || e.key==='а' || e.key==='А'){ goFs(); }
+    else if(e.key==='n' || e.key==='N' || e.key==='т' || e.key==='Т'){ playNext(true); }
+    else if(e.key===' '){ e.preventDefault(); $('pauseBtn').click(); }
+    else if(e.key==='/' ){ e.preventDefault(); $('q').focus(); $('q').select(); }
+  });
+
+  // ---------- Microphones (2 входа), эффекты, автотюн ----------
+  let ctx=null, stream=null, nodes=null, meterRaf=0, revBufKey='', workletReady=null;
+  const sliders = ['music','voice','vol1','vol2','echo','echoTime','rev','atStrength'];
+  const defaults = { music:80, voice:100, vol1:100, vol2:100, echo:15, echoTime:220, rev:35, atStrength:55 };
+  sliders.forEach(id => { const v = store.get(id, null); $(id).value = v!==null ? v : defaults[id]; });
+  const checks = { comp:true, blend:true, agc:true, on1:true, on2:false, at1:false, at2:false };
+  Object.keys(checks).forEach(id => $(id).checked = store.get(id, checks[id]));
+  $('atKey').value = store.get('atKey', 'chrom');
+  const fmt = { music:v=>v+'%', voice:v=>v+'%', vol1:v=>v+'%', vol2:v=>v+'%', echo:v=>v+'%', echoTime:v=>v+' мс', rev:v=>v+'%', atStrength:v=>v+'%' };
+  function showVals(){ sliders.forEach(id => $(id+'V').textContent = fmt[id]($(id).value)); }
+  showVals();
+
+  const PRESETS = {
+    dry:    { echo:0,  echoTime:200, rev:0,  revLen:1.2 },
+    bar:    { echo:15, echoTime:220, rev:35, revLen:1.8 },
+    studio: { echo:8,  echoTime:160, rev:22, revLen:1.3 },
+    hall:   { echo:22, echoTime:320, rev:55, revLen:3.2 },
+  };
+  let preset = store.get('preset', 'bar');
+  function markPreset(){ document.querySelectorAll('[data-preset]').forEach(b => b.classList.toggle('sec', b.dataset.preset!==preset)); }
+  markPreset();
+  document.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => {
+    preset = b.dataset.preset; store.set('preset', preset);
+    const p = PRESETS[preset];
+    $('echo').value = p.echo; $('echoTime').value = p.echoTime; $('rev').value = p.rev;
+    markPreset(); applyParams();
+  });
+
+  function impulse(ctx, seconds, decay=3.0){
+    const rate = ctx.sampleRate, len = Math.floor(rate*seconds);
+    const buf = ctx.createBuffer(2, len, rate);
+    for(let ch=0; ch<2; ch++){
+      const d = buf.getChannelData(ch); let lp = 0;
+      for(let i=0;i<len;i++){ const n = Math.random()*2-1; lp = lp*0.55 + n*0.45; d[i] = lp * Math.pow(1 - i/len, decay); }
+    }
+    return buf;
+  }
+
+  // ноты тональностей для автотюна
+  const NOTE = ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си'];
+  const MAJOR = [0,2,4,5,7,9,11];
+  (function fillKeys(){
+    const sel = $('atKey'); const saved = store.get('atKey','chrom');
+    let html = '<option value="chrom">Все ноты (подходит всегда)</option>';
+    NOTE.forEach((n,i)=> html += `<option value="M${i}">${n} мажор</option>`);
+    NOTE.forEach((n,i)=> html += `<option value="m${i}">${n} минор</option>`);
+    sel.innerHTML = html; sel.value = saved;
+  })();
+  function scaleNotes(){
+    const v = $('atKey').value;
+    if(v==='chrom') return [0,1,2,3,4,5,6,7,8,9,10,11];
+    const root = +v.slice(1); const r = v[0]==='M' ? root : (root+3)%12; // минор = параллельный мажор
+    return MAJOR.map(x => (x+r)%12);
+  }
+  const noteName = m => NOTE[((Math.round(m)%12)+12)%12] + (Math.floor(Math.round(m)/12)-1);
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  function applyMusic(){ if(playerReady && player.setVolume) player.setVolume(+$('music').value); }
+  if(isIOS){ const r=$('music').closest('label'); r.insertAdjacentHTML('afterend','<div class="status" style="margin:-4px 0 6px">На iPad громкость минуса — кнопками громкости, а голос — ползунком «Голоса».</div>'); }
+  window.__applyMusic = applyMusic;
+
+  function applyParams(){
+    showVals();
+    sliders.forEach(id => store.set(id, $(id).value));
+    Object.keys(checks).forEach(id => store.set(id, $(id).checked));
+    store.set('atKey', $('atKey').value);
+    applyMusic();
+    $('mic2box').style.opacity = $('on2').checked ? 1 : .55;
+    $('mic1box').style.opacity = $('on1').checked ? 1 : .55;
+    if(!nodes) return;
+    const t = ctx.currentTime, k = 0.04;
+    nodes.master.gain.setTargetAtTime($('voice').value/100, t, k);
+    nodes.echoWet.gain.setTargetAtTime($('echo').value/100 * 0.8, t, k);
+    nodes.fb.gain.setTargetAtTime(Math.min(0.55, 0.15 + $('echo').value/100*0.4), t, k);
+    nodes.delay.delayTime.setTargetAtTime($('echoTime').value/1000, t, 0.05);
+    nodes.revWet.gain.setTargetAtTime($('rev').value/100 * 1.1, t, k);
+    const len = (PRESETS[preset]||PRESETS.bar).revLen;
+    if(revBufKey !== String(len)){ nodes.conv.buffer = impulse(ctx, len); revBufKey = String(len); }
+    const b = $('blend').checked, useComp = $('comp').checked, sc = scaleNotes(), str = $('atStrength').value/100;
+    nodes.mics.forEach((m, i) => {
+      const n = i+1, on = $('on'+n).checked;
+      m.vol.gain.setTargetAtTime(on ? $('vol'+n).value/100 : 0, t, k);
+      m.mud.gain.setTargetAtTime(b ? -3.5 : 0, t, k);
+      m.pres.gain.setTargetAtTime(b ? 3 : 0, t, k);
+      m.air.gain.setTargetAtTime(b ? 2.5 : 0, t, k);
+      m.hp.frequency.setTargetAtTime(b ? 110 : 70, t, k);
+      m.comp.threshold.setTargetAtTime(useComp ? -26 : 0, t, k);
+      m.comp.ratio.setTargetAtTime(useComp ? 3.5 : 1, t, k);
+      m.makeup.gain.setTargetAtTime(useComp ? 1.5 : 1, t, k);
+      if(!$('agc').checked) m.agc.gain.setTargetAtTime(1, t, 0.2);
+      if(m.tuner) m.tuner.port.postMessage({ enabled: $('at'+n).checked && on, strength: str, scale: sc });
+    });
+  }
+  sliders.forEach(id => $(id).addEventListener('input', () => { if(['echo','echoTime','rev'].includes(id)){ preset='custom'; store.set('preset',preset); markPreset(); } applyParams(); }));
+  [...Object.keys(checks), 'atKey'].forEach(id => $(id).addEventListener('change', applyParams));
+  applyMusic(); applyParams();
+
+  async function fillMics(){
+    try{
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const saved = store.get('mic','');
+      const mics = devs.filter(d=>d.kind==='audioinput' && d.deviceId!=='default' && d.deviceId!=='communications');
+      const bt = l => /airpods|bluetooth|beats|buds|headset|hands-?free/i.test(l||'');
+      let pick = saved && mics.some(d=>d.deviceId===saved) ? saved : '';
+      if(!pick){ const usb = mics.find(d=>d.label && !bt(d.label) && !/macbook|встроен|built-?in/i.test(d.label)) || mics.find(d=>d.label && !bt(d.label)); if(usb) pick = usb.deviceId; }
+      $('micSel').innerHTML = mics.map(d=>`<option value="${esc(d.deviceId)}" ${d.deviceId===pick?'selected':''}>${bt(d.label)?'⚠️ ':''}${esc(d.label||'Микрофон')}</option>`).join('') || '<option value="">Микрофон по умолчанию</option>';
+      if(pick && pick!==saved) store.set('mic', pick);
+    }catch(e){}
+  }
+
+  function buildMicChain(input, idx){
+    const inGain = ctx.createGain();
+    const hp = ctx.createBiquadFilter(); hp.type='highpass'; hp.Q.value = 0.7;
+    const mud = ctx.createBiquadFilter(); mud.type='peaking'; mud.frequency.value = 320; mud.Q.value = 1.0;
+    const pres = ctx.createBiquadFilter(); pres.type='peaking'; pres.frequency.value = 3200; pres.Q.value = 0.9;
+    const air = ctx.createBiquadFilter(); air.type='highshelf'; air.frequency.value = 10000;
+    const comp = ctx.createDynamicsCompressor(); comp.knee.value = 10; comp.attack.value = 0.004; comp.release.value = 0.18;
+    const makeup = ctx.createGain(), agc = ctx.createGain(), vol = ctx.createGain();
+    const analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
+    let tuner = null;
+    input.connect(inGain); inGain.connect(hp);
+    if(workletReady){
+      tuner = new AudioWorkletNode(ctx, 'tuner', { numberOfInputs:1, numberOfOutputs:1, outputChannelCount:[1], channelCount:1, channelCountMode:'explicit' });
+      tuner.port.onmessage = e => {
+        const d = e.data, el = $('atNote'+(idx+1));
+        if(!$('at'+(idx+1)).checked){ el.textContent=''; return; }
+        el.textContent = d.voiced ? `${noteName(d.f0)} → ${noteName(d.target)}` : '…';
+      };
+      hp.connect(tuner); tuner.connect(mud);
+    } else { hp.connect(mud); }
+    mud.connect(pres); pres.connect(air); air.connect(comp); comp.connect(makeup);
+    makeup.connect(analyser); makeup.connect(agc); agc.connect(vol);
+    return { inGain, hp, mud, pres, air, comp, makeup, agc, vol, analyser, tuner };
+  }
+
+  async function startMic(){
+    stopMic();
+    let deviceId = $('micSel').value || store.get('mic','');
+    if(!deviceId){
+      try{ const s = await navigator.mediaDevices.getUserMedia({audio:true}); s.getTracks().forEach(t=>t.stop()); await fillMics(); deviceId = $('micSel').value; }catch(e){}
+    }
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({ audio: {
+        deviceId: deviceId ? { exact: deviceId } : undefined, channelCount: { ideal: 2 },
+        echoCancellation:false, noiseSuppression:false, autoGainControl:false, latency:0
+      }});
+    }catch(e){
+      $('micOn').checked = false;
+      $('micStatus').innerHTML = '<span class="err">Нет доступа к микрофону. Разрешите доступ в окне браузера и в Системных настройках → Конфиденциальность → Микрофон.</span>';
+      return;
+    }
+    if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)({ latencyHint:'interactive' });
+    if(ctx.state==='suspended') await ctx.resume();
+    if(workletReady===null){ try{ await ctx.audioWorklet.addModule('tuner-worklet.js'); workletReady = true; }catch(e){ workletReady = false; } }
+    const src = ctx.createMediaStreamSource(stream);
+    const chans = stream.getAudioTracks()[0]?.getSettings?.().channelCount || 1;
+    const split = ctx.createChannelSplitter(2);
+    src.connect(split);
+    const bus = ctx.createGain();
+    const mics = [0,1].map(i => { const m = buildMicChain(split, i); split.disconnect(m.inGain); split.connect(m.inGain, i); m.vol.connect(bus); return m; });
+    // если у устройства один канал — второй микрофон берёт тот же вход
+    if(chans < 2){ split.disconnect(mics[1].inGain); split.connect(mics[1].inGain, 0); }
+    const dry = ctx.createGain();
+    const delay = ctx.createDelay(1.5), fb = ctx.createGain(), echoWet = ctx.createGain();
+    const echoTone = ctx.createBiquadFilter(); echoTone.type='lowpass'; echoTone.frequency.value = 3200;
+    const preDelay = ctx.createDelay(0.2); preDelay.delayTime.value = 0.03;
+    const revTone = ctx.createBiquadFilter(); revTone.type='lowpass'; revTone.frequency.value = 6500;
+    const conv = ctx.createConvolver(); revBufKey=''; const revWet = ctx.createGain();
+    const master = ctx.createGain();
+    const limiter = ctx.createDynamicsCompressor(); limiter.threshold.value = -3; limiter.knee.value = 0; limiter.ratio.value = 20; limiter.attack.value = 0.002; limiter.release.value = 0.1;
+    bus.connect(dry); dry.connect(master);
+    bus.connect(delay); delay.connect(echoTone); echoTone.connect(fb); fb.connect(delay); echoTone.connect(echoWet); echoWet.connect(master);
+    bus.connect(preDelay); preDelay.connect(conv); conv.connect(revTone); revTone.connect(revWet); revWet.connect(master);
+    master.connect(limiter); limiter.connect(ctx.destination);
+    nodes = { src, mics, delay, fb, echoWet, conv, revWet, master, out: limiter };
+    applyParams();
+    await fillMics();
+    const lat = ((ctx.baseLatency||0) + (ctx.outputLatency||0))*1000;
+    const label = stream.getAudioTracks()[0]?.label || '';
+    let msg;
+    if(/airpods|bluetooth|beats|buds|headset|hands-?free/i.test(label)) msg = '<span class="err">Выбран блютуз-микрофон (' + esc(label) + '). С ним звук плохой и с задержкой — выберите аудиокарту.</span>';
+    else msg = '<span style="color:var(--ok)">Микрофон включён.</span> ' + (lat ? 'Задержка ≈ '+Math.round(lat)+' мс. ' : '') +
+      (chans >= 2 ? 'Аудиокарта отдаёт 2 входа — дуэт доступен.' : 'Устройство отдаёт 1 канал — второй микрофон дублирует первый.');
+    if(!workletReady) msg += ' <span class="err">Автотюн недоступен в этом браузере.</span>';
+    $('micStatus').innerHTML = msg;
+    startMeter();
+  }
+
+  function startMeter(){
+    const data = new Float32Array(1024);
+    const TARGET = 0.12, GATE = 0.012;
+    let last = performance.now();
+    const tick = (now) => {
+      now = now || performance.now();
+      const dt = Math.min(0.1, (now - last)/1000); last = now;
+      if(nodes) nodes.mics.forEach((m, i) => {
+        m.analyser.getFloatTimeDomainData(data);
+        let sum=0, peak=0; for(const x of data){ sum += x*x; const a=Math.abs(x); if(a>peak) peak=a; }
+        const rms = Math.sqrt(sum/data.length);
+        $('meter'+(i+1)).style.width = Math.min(100, peak*140)+'%';
+        if($('agc').checked && rms > GATE){
+          const want = Math.max(0.5, Math.min(3.5, TARGET / rms));
+          const cur = m.agc.gain.value, speed = want < cur ? 4.0 : 0.8;
+          m.agc.gain.setTargetAtTime(cur + (want - cur) * Math.min(1, dt*speed), ctx.currentTime, 0.05);
+        }
+      });
+      meterRaf = requestAnimationFrame(tick);
+    };
+    meterRaf = requestAnimationFrame(tick);
+  }
+  function stopMic(){
+    cancelAnimationFrame(meterRaf); ['meter1','meter2'].forEach(id => $(id).style.width='0');
+    if(nodes){ try{ nodes.out.disconnect(); nodes.src.disconnect(); nodes.mics.forEach(m => m.tuner && m.tuner.disconnect()); }catch(e){} nodes=null; }
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  }
+  $('micOn').onchange = () => { store.set('micOn', $('micOn').checked); $('micOn').checked ? startMic() : (stopMic(), $('micStatus').textContent='Микрофоны выключены.'); };
+  $('micSel').onchange = () => { store.set('mic', $('micSel').value); if($('micOn').checked) startMic(); };
+  fillMics();
+  if(store.get('micOn', false)){
+    // браузер требует клик перед звуком — включим при первом клике
+    const once = () => { document.removeEventListener('click', once, true); $('micOn').checked = true; startMic(); };
+    document.addEventListener('click', once, true);
+    $('micStatus').textContent = 'Микрофон включится после первого клика в окне.';
+  }
+
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
+  // восстановление очереди после перезапуска
+  if(queue.length) $('now').textContent = 'В очереди ' + queue.length + ' песен — нажмите «⏭ Следующая».';
+})();
+</script>
+</body>
+</html>
