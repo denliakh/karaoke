@@ -6,6 +6,7 @@
 <title>Пой-Пой</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
+<link rel="preload" as="image" href="logo.png">
 <link rel="apple-touch-icon" href="icon-512.png">
 <meta name="theme-color" content="#0f0d14">
 <style>
@@ -165,7 +166,7 @@
 <body>
 <div class="app">
   <header>
-    <div class="logo">🎤 Пой-<span>Пой</span></div>
+    <div class="logo"><img src="logo.png" alt="Пой-Пой" style="height:48px;display:block"></div>
     <form class="search" id="searchForm">
       <input id="q" placeholder="Название песни или исполнитель…" autocomplete="off" autofocus>
       <button class="btn" type="submit">Найти</button>
@@ -208,7 +209,7 @@
     <div class="sec-box">
       <div id="playerWrap">
         <div id="player"></div>
-        <div class="empty" id="emptyPlayer">Здесь будет видео с текстом песни</div>
+        <div class="empty" id="emptyPlayer" style="flex-direction:column;gap:10px"><img src="logo.png" alt="Пой-Пой" style="width:62%;max-width:420px"><span>Здесь будет видео с текстом песни</span></div>
         <div id="stageNote"><div style="font-size:clamp(20px,8cqw,60px)">📺</div><div>Видео идёт на втором экране</div><button class="btn small sec" id="stageBack">Вернуть сюда</button></div>
         <div class="ov" id="splash"><div id="splashBody"></div><div class="res-btns"><button class="btn" id="splashGo">▶ Начать сейчас</button><button class="btn sec" id="splashAway">🚶 Отошёл → следующий</button><button class="btn sec" id="splashAway2" style="display:none"></button></div></div>
         <div class="ov" id="champ"><div id="champBody"></div><div class="res-btns"><button class="btn" id="champClose">Ура! 🎉</button></div></div>
@@ -348,6 +349,7 @@
   <button class="btn small sec" id="roomModalClose" style="margin-top:14px">Закрыть</button>
 </div></div>
 <div class="modal" id="roomJoin"><div class="box">
+  <img src="logo.png" alt="Пой-Пой" style="height:70px;display:block;margin:0 auto 12px">
   <h2 id="joinTitle">🎤 Вас пригласили в Пой-Пой!</h2>
   <div class="hint">Видео, заставки и оценки будут идти вместе с хозяином комнаты. Как вас зовут?</div>
   <div class="row" style="flex-wrap:nowrap"><input id="joinName" placeholder="Ваше имя" autocomplete="off" style="flex:1;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:#0c0a10;font-size:16px">

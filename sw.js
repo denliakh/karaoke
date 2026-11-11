@@ -1,6 +1,6 @@
 // Кэш программы: приложение открывается даже когда мини-сервер не запущен
-const CACHE = 'poypoy-v16';
-const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'tuner-worklet.js', 'catalog.js', 'screen.html'];
+const CACHE = 'poypoy-v17';
+const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'tuner-worklet.js', 'catalog.js', 'screen.html', 'logo.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', e => {
