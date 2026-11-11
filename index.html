@@ -93,6 +93,51 @@
   .res-parts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:clamp(10px,1.3vw,18px);color:var(--muted)}
   .res-song{margin-top:8px;font-size:clamp(10px,1.3vw,18px);color:var(--muted)}
   .res-btns{display:flex;gap:10px;margin-top:12px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  #partyBar{display:none;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin-bottom:12px;border-radius:14px;background:var(--panel);border:1px solid var(--line);transition:box-shadow .3s}
+  #partyBar.flash{box-shadow:0 0 0 3px var(--accent)}
+  .chip{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);font-weight:600}
+  .chip.on{background:var(--accent);border-color:var(--accent)}
+  .chip.away{opacity:.45}
+  #teamWrap{display:none;gap:6px;align-items:center}
+  #teamWrap input,#newPlayer{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10}
+  .cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .cat{padding:18px 14px;border-radius:16px;border:1px solid var(--line);background:linear-gradient(135deg,#2a1f3d,#1a1722);text-align:left;font-size:17px;font-weight:700;display:flex;flex-direction:column;gap:4px}
+  .cat span{font-size:30px}.cat small{color:var(--muted);font-weight:400;font-size:13px}
+  .cat:hover{border-color:var(--accent2)}
+  .songs{list-style:none;margin:0;padding:0}
+  .songs li{display:flex;gap:8px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line);font-size:16px}
+  .songs li .qt{flex:1}
+  h3.sub{margin:18px 0 10px;font-size:16px}
+  .tbl{width:100%;border-collapse:collapse;font-size:15px}.tbl td,.tbl th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+  .tbl th{color:var(--muted);font-weight:500;font-size:13px}
+  .ov{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:16px}
+  .ov.show{display:flex;animation:pop .35s ease-out}
+  #splash{background:radial-gradient(circle at 50% 35%,rgba(255,61,127,.45),rgba(15,13,20,.97) 70%)}
+  .sp-top{font-size:clamp(14px,2.4vw,34px);color:#ffd9e8;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+  .sp-team{font-size:clamp(14px,2.4vw,34px);color:#ffd23d;font-weight:800}
+  .sp-name{font-size:clamp(34px,8vw,130px);font-weight:900;line-height:1.05;margin:4px 0}
+  .sp-name span{color:var(--accent)}
+  .sp-mics{font-size:clamp(11px,1.5vw,22px);color:#e6dcff}
+  .sp-song{font-size:clamp(12px,1.8vw,26px);color:var(--muted);margin-top:8px;max-width:90%}
+  .sp-count{font-size:clamp(28px,5vw,80px);font-weight:900;color:#ffd23d;margin-top:6px}
+  .res-next{margin-top:10px;font-size:clamp(12px,1.8vw,26px);color:#ffd9e8}
+  #champ{background:radial-gradient(circle at 50% 35%,rgba(255,210,61,.5),rgba(15,13,20,.97) 70%)}
+  .ch-crown{font-size:clamp(50px,10vw,160px);animation:bob 1.2s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+  .ch-t{font-size:clamp(14px,2.4vw,36px);font-weight:700;color:#ffd23d;text-transform:uppercase;letter-spacing:3px}
+  .ch-name{font-size:clamp(34px,8vw,130px);font-weight:900}
+  .ch-list{font-size:clamp(12px,1.8vw,26px);margin:8px 0;color:#f3eefc}
+  #breakOv{background:rgba(15,13,20,.94)}
+  .br-emoji{font-size:clamp(40px,8vw,120px)}
+  .br-t{font-size:clamp(24px,5vw,80px);font-weight:900}
+  #breakTime{font-size:clamp(20px,4vw,60px);color:#ffd23d;font-variant-numeric:tabular-nums}
+  #roulette .box{text-align:center}
+  #rouWheel{font-size:clamp(26px,5vw,56px);font-weight:900;margin:22px 0;min-height:1.3em;padding:14px;border-radius:16px;background:var(--panel2)}
+  #rouWheel.hit{background:linear-gradient(90deg,var(--accent),var(--accent2));animation:pop .4s}
+  #rouLabel{color:var(--muted)}
+  #rouBtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:44px}
+  .qwho{font-size:12px;color:#ffb3cf;font-weight:700}
   .kbd{font-size:12px;color:var(--muted);margin-top:8px}
 </style>
 </head>
@@ -108,8 +153,32 @@
   </header>
 
   <main>
-    <div class="hint" id="hint">Введите песню — я ищу только караоке-версии на YouTube. Нажмите на картинку, чтобы сразу петь, или «В очередь».</div>
-    <div class="grid" id="results"></div>
+    <div class="tabs">
+      <button class="btn small" data-tab="search">🔎 Поиск</button>
+      <button class="btn small sec" data-tab="cat">📚 Каталог</button>
+      <button class="btn small sec" data-tab="mine">⭐ Наши песни</button>
+      <button class="btn small sec" data-tab="party">🎉 Вечеринка</button>
+    </div>
+    <div id="partyBar"><b>Кто поёт:</b> <span id="partyChips" class="row"></span> <span class="status" id="selHint" style="margin:0"></span>
+      <span id="teamWrap">👫 Команда: <input id="teamName" placeholder="Название дуэта (необязательно)"></span></div>
+    <section id="tab-search">
+      <div class="hint" id="hint">Введите песню — я ищу только караоке-версии на YouTube. Нажмите на картинку, чтобы сразу петь, или «В очередь».</div>
+      <div class="grid" id="results"></div>
+    </section>
+    <section id="tab-cat" style="display:none"><div id="catView"></div></section>
+    <section id="tab-mine" style="display:none"><div id="mineView"></div></section>
+    <section id="tab-party" style="display:none">
+      <button class="btn" id="partyToggle">🎉 Включить режим вечеринки</button>
+      <div class="hint" style="margin-top:10px">Впишите игроков → каждому добавляйте песни (выберите имя сверху; два имени — дуэт) → программа ставит всех по кругу, перед песней показывает, кто поёт, а в конце — оценку.</div>
+      <h3 class="sub">👥 Игроки</h3>
+      <form id="addPlayerForm" class="row"><input id="newPlayer" placeholder="Имя игрока" autocomplete="off"><button class="btn small" type="submit">+ Добавить</button></form>
+      <ul class="queue" id="players" style="margin-top:8px"></ul>
+      <h3 class="sub">📊 Итоги вечера</h3>
+      <table class="tbl"><thead><tr><th></th><th>Игрок</th><th>Песен</th><th>Средний</th><th>Лучший</th></tr></thead><tbody id="totals"></tbody></table>
+      <div id="finalBox" style="margin:12px 0"></div>
+      <div class="row"><button class="btn" id="finalBtn">🏆 Финал (топ-3)</button><button class="btn small sec" id="partyReset">Новая вечеринка (сброс)</button></div>
+      <div class="status" style="margin-top:8px">Финал: трое лучших по среднему баллу поют ещё по песне — победитель становится Королём караоке. Первым поёт тот, у кого балл ниже.</div>
+    </section>
   </main>
 
   <aside>
@@ -117,6 +186,9 @@
       <div id="playerWrap">
         <div id="player"></div>
         <div class="empty" id="emptyPlayer">Здесь будет видео с текстом песни</div>
+        <div class="ov" id="splash"><div id="splashBody"></div><div class="res-btns"><button class="btn" id="splashGo">▶ Начать сейчас</button><button class="btn sec" id="splashAway">🚶 Отошёл → следующий</button></div></div>
+        <div class="ov" id="champ"><div id="champBody"></div><div class="res-btns"><button class="btn" id="champClose">Ура! 🎉</button></div></div>
+        <div class="ov" id="breakOv"><div class="br-emoji">🍢🥂</div><div class="br-t">Перерыв</div><div id="breakTime">00:00</div><div class="res-btns"><button class="btn" id="breakGo">▶ Продолжаем!</button></div></div>
         <div id="result"><div id="resultBody"></div><div class="res-btns"><button class="btn" id="resultNext">Дальше ▶</button><button class="btn sec" id="resultStay">Подождать</button></div></div>
       </div>
       <div class="now" id="now"></div>
@@ -125,6 +197,7 @@
         <button class="btn small sec" id="nextBtn">⏭ Следующая</button>
         <button class="btn small sec" id="pauseBtn">⏯ Пауза</button>
         <button class="btn small sec" id="gameBtn">🏆 Игра</button>
+        <button class="btn small sec" id="breakBtn">⏸ Перерыв</button>
       </div>
       <label class="switch"><input type="checkbox" id="autoFs" checked> Сразу на весь экран при запуске песни</label>
       <div class="kbd">Клавиши: F — весь экран, N — следующая, пробел — пауза (когда фокус не в поиске)</div>
@@ -217,8 +290,12 @@
   </div>
 </div>
 
+<div class="modal" id="roulette"><div class="box"><div id="rouLabel"></div><div id="rouWheel">🎲</div><div id="rouBtns"></div>
+  <button class="btn small sec" id="rouClose" style="margin-top:14px">Закрыть</button></div></div>
+
 <div class="toast" id="toast"></div>
 
+<script src="catalog.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -271,15 +348,26 @@
     }));
   }
 
+  // кэш поиска: одна и та же песня не тратит лимит повторно (хранится 30 дней)
+  async function cachedSearch(q){
+    const k = q.trim().toLowerCase(); const cache = store.get('cache', {});
+    const hit = cache[k]; if(hit && Date.now() - hit.t < 30*864e5) return hit.r;
+    const r = await ytSearch(q, apiKey);
+    cache[k] = { t: Date.now(), r }; const keys = Object.keys(cache);
+    if(keys.length > 400) keys.sort((a,b)=>cache[a].t-cache[b].t).slice(0, keys.length-400).forEach(x => delete cache[x]);
+    store.set('cache', cache); return r;
+  }
+  function runSearch(q){ $('q').value = q; switchTab('search'); $('searchForm').requestSubmit(); }
   let lastResults = [];
   $('searchForm').onsubmit = async e => {
     e.preventDefault();
     const q = $('q').value.trim(); if(!q) return;
     if(!apiKey){ openKey(); return; }
+    switchTab('search');
     $('hint').innerHTML = '<span class="spin"></span> Ищу «'+esc(q)+'»…';
     $('results').innerHTML = '';
     try{
-      lastResults = await ytSearch(q, apiKey);
+      lastResults = await cachedSearch(q);
       $('hint').textContent = lastResults.length ? 'Нажмите на картинку — песня начнётся сразу. «В очередь» — сыграет после текущей.' : 'Ничего не нашлось. Попробуйте написать иначе (например, только название песни).';
       renderResults();
     }catch(err){ $('hint').innerHTML = '<span class="err">'+esc(err.message)+'</span>'; }
@@ -294,13 +382,26 @@
         <div class="a">
           <button class="btn small" data-play="${i}">▶ Петь</button>
           <button class="btn small sec" data-add="${i}">+ В очередь</button>
+          <button class="btn small sec" data-fav="${i}" title="В избранное">${window.__party && window.__party.isFav(v.id) ? '★' : '☆'}</button>
+          ${window.__party && window.__party.P.on ? `<button class="btn small sec" data-who="${i}" title="Рулетка: кто поёт?">🎲</button>` : ''}
         </div>
       </div>`).join('');
   }
   $('results').onclick = e => {
-    const p = e.target.closest('[data-play]'), a = e.target.closest('[data-add]');
-    if(p){ playNow(lastResults[+p.dataset.play], true); }
-    else if(a){ queue.push(lastResults[+a.dataset.add]); saveQueue(); renderQueue(); toast('Добавлено в очередь'); if(!current) playNext(false); }
+    const p = e.target.closest('[data-play]'), a = e.target.closest('[data-add]'), f = e.target.closest('[data-fav]'), w = e.target.closest('[data-who]');
+    const pt = window.__party;
+    if(p){
+      const v = lastResults[+p.dataset.play];
+      if(pt && pt.P.on){
+        if(!pt.P.sel.length){ pt.whoSings(v); return; }
+        pt.P.force = { id:v.id, title:v.title, thumb:v.thumb, channel:v.channel, singers:[...pt.P.sel], team: pt.P.sel.length>1 ? pt.P.team : '' };
+        pt.partyNext(true); return;
+      }
+      playNow(v, true);
+    }
+    else if(a){ addSong(lastResults[+a.dataset.add]); }
+    else if(f){ pt.toggleFav(lastResults[+f.dataset.fav]); renderResults(); }
+    else if(w){ pt.whoSings(lastResults[+w.dataset.who]); }
   };
 
   // ---------- Queue ----------
@@ -308,12 +409,24 @@
   let current = null;
   const saveQueue = () => store.set('queue', queue);
   function renderQueue(){
+    const pt = window.__party;
+    if(pt && pt.P.on){
+      const pv = pt.preview(15);
+      $('queue').innerHTML = pv.map(v => `<li><img src="${v.thumb}" alt=""><div class="qt"><div class="qwho">${esc(pt.singersText(v))}</div>${esc(v.title)}</div>
+        <button data-pdel="${v.key}" title="Убрать">✕</button></li>`).join('');
+      $('queueEmpty').textContent = 'Пусто. Выберите сверху, кто поёт, и добавляйте песни.';
+      $('queueEmpty').style.display = pv.length ? 'none' : 'block';
+      return;
+    }
+    $('queueEmpty').textContent = 'Пусто. Добавляйте песни кнопкой «В очередь».';
     $('queue').innerHTML = queue.map((v,i)=>`
       <li><img src="${v.thumb}" alt=""><div class="qt">${esc(v.title)}</div>
       <button data-up="${i}" title="Выше">↑</button><button data-del="${i}" title="Убрать">✕</button></li>`).join('');
     $('queueEmpty').style.display = queue.length ? 'none' : 'block';
   }
   $('queue').onclick = e => {
+    const pd = e.target.closest('[data-pdel]');
+    if(pd){ const P = window.__party.P; Object.values(P.lists).forEach(l => { const i = l.findIndex(x => x.key === pd.dataset.pdel); if(i>=0) l.splice(i,1); }); store.set('party', P); renderQueue(); window.__party.renderParty(); return; }
     const d = e.target.closest('[data-del]'), u = e.target.closest('[data-up]');
     if(d){ queue.splice(+d.dataset.del,1); }
     if(u && +u.dataset.up>0){ const i=+u.dataset.up; [queue[i-1],queue[i]]=[queue[i],queue[i-1]]; }
@@ -331,7 +444,7 @@
         onReady: () => { playerReady = true; window.__applyMusic && window.__applyMusic(); if(pending){ const p=pending; pending=null; load(p); } },
         onStateChange: ev => {
           const g = window.__game; if(g) g.playing = ev.data === YT.PlayerState.PLAYING;
-          if(ev.data === YT.PlayerState.ENDED){ const shown = window.__showResult && window.__showResult(current && current.title, () => playNext(false)); if(!shown) playNext(false); }
+          if(ev.data === YT.PlayerState.ENDED) endSong();
         },
         onError: ev => {
           const v = current;
@@ -350,6 +463,7 @@
     clearInterval(resultTimer);
     $('result').classList.remove('show');
     $('emptyPlayer').style.display='none';
+    if(window.__party) window.__party.remember(v);
     $('now').innerHTML = '🎶 <b>'+esc(v.title)+'</b>';
     document.title = '🎤 ' + v.title;
     if(!playerReady){ pending = v; return; }
@@ -360,7 +474,20 @@
     if(gesture && $('autoFs').checked) goFs();
     load(v);
   }
+  // песня закончилась (или её пропустили): оценка → следующая
+  function endSong(){
+    const pt = window.__party;
+    if(pt && pt.P.on){
+      const after = () => { if(!pt.checkChampion()) pt.partyNext(false); };
+      const shown = game.on && pt.partyResult(current && current.title, after);
+      if(!shown) after();
+      return;
+    }
+    const shown = window.__showResult && window.__showResult(current && current.title, () => playNext(false)); if(!shown) playNext(false);
+  }
   function playNext(gesture){
+    const pt = window.__party;
+    if(pt && pt.P.on) return pt.partyNext(gesture);
     if(!queue.length){
       current = null;
       if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
@@ -373,7 +500,12 @@
   }
   function goFs(){ const w=$('playerWrap'); if(!document.fullscreenElement && w.requestFullscreen) w.requestFullscreen().catch(()=>{}); }
   $('fsBtn').onclick = goFs;
-  $('nextBtn').onclick = () => { const g=window.__game; if(g && g.on && g.s && Math.max(g.s[0].play,g.s[1].play) > 45 && !$('result').classList.contains('show')){ if(window.__showResult(current && current.title, () => playNext(false))) return; } playNext(true); };
+  $('nextBtn').onclick = () => {
+    if($('splash').classList.contains('show')){ $('splashGo').click(); return; }
+    if($('result').classList.contains('show')){ $('resultNext').click(); return; }
+    const g=window.__game; if(g && g.on && g.s && Math.max(g.s[0].play,g.s[1].play) > 45){ try{ player.pauseVideo(); }catch(e){} endSong(); return; }
+    playNext(true);
+  };
   $('pauseBtn').onclick = () => { if(!playerReady) return; const s=player.getPlayerState(); s===1 ? player.pauseVideo() : player.playVideo(); };
   $('autoFs').checked = store.get('autoFs', true);
   $('autoFs').onchange = () => store.set('autoFs', $('autoFs').checked);
@@ -441,7 +573,7 @@
   const stars = s => '★★★★★'.slice(0, Math.round(s/20)) + '☆☆☆☆☆'.slice(0, 5-Math.round(s/20));
   const playerName = i => ($('name'+(i+1)).value.trim() || ('Микрофон ' + (i+1)));
 
-  function renderGameBtn(){ $('gameBtn').classList.toggle('sec', !game.on); $('gameBtn').textContent = game.on ? '🏆 Игра: ВКЛ' : '🏆 Игра'; $('gameBox').style.display = game.on ? 'block' : 'none'; }
+  function renderGameBtn(){ $('gameBtn').classList.toggle('sec', !game.on); $('gameBtn').textContent = game.on ? '🏆 Игра: ВКЛ' : '🏆 Игра'; $('gameBox').style.display = game.on && !(store.get('party',{}).on) ? 'block' : 'none'; }
   $('gameBtn').onclick = () => {
     game.on = !game.on; store.set('game', game.on); renderGameBtn();
     if(game.on){ game.reset(); toast(nodes ? 'Игровой режим включён — оценка будет в конце песни' : 'Игровой режим включён. Не забудьте включить микрофон!', 3500); }
@@ -481,6 +613,10 @@
       </div>`).join('') + '</div><div class="res-song">' + esc(song || '') + '</div>';
     res.forEach(x => { board.push({ name: x.name, song: (song||'').replace(/\s*[\(\[].*?[\)\]]/g,'').slice(0,60), score: x.r.total, t: Date.now() }); });
     store.set('board', board); renderBoard();
+    animateResult(onDone);
+    return true;
+  }
+  function animateResult(onDone){
     $('result').classList.add('show');
     // анимация счёта
     document.querySelectorAll('.res-score').forEach(el => { const to=+el.dataset.to; let v=0; const st=performance.now();
@@ -491,9 +627,335 @@
     resultTimer = setInterval(() => { left--; $('resultNext').textContent = 'Дальше ▶ (' + left + ')'; if(left<=0) done(); }, 1000);
     $('resultNext').onclick = done;
     $('resultStay').onclick = () => { clearInterval(resultTimer); $('resultNext').textContent = 'Дальше ▶'; };
-    return true;
   }
   window.__game = game; window.__showResult = showResult;
+
+  // ======================= ВЕЧЕРИНКА =======================
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const P = Object.assign({ on:false, players:[], lists:{}, turn:-1, force:null, scores:[], final:null, sel:[], team:'' }, store.get('party', {}));
+  const saveP = () => store.set('party', P);
+  const pl = id => P.players.find(p => p.id === id);
+  const songsWord = n => n + ' ' + (n%10===1 && n%100!==11 ? 'песня' : [2,3,4].includes(n%10) && ![12,13,14].includes(n%100) ? 'песни' : 'песен');
+  const pname = id => (pl(id) || {}).name || '?';
+  const singersText = it => it && it.singers && it.singers.length ? (it.singers.length > 1 ? (it.team ? `«${it.team}»: ` : '') + it.singers.map(pname).join(' & ') : pname(it.singers[0])) : '';
+
+  // ---------- очередь по кругу ----------
+  function finalIds(){ return P.final ? P.final.ids.filter(id => !(id in P.final.done)) : null; }
+  function pickNext(sim){
+    const S = sim || P;
+    if(S.force){ const it = S.force; S.force = null; return it; }
+    const n = S.players.length; if(!n) return null;
+    const fin = finalIds();
+    for(let k = 1; k <= n; k++){
+      const idx = (S.turn + k) % n, p = S.players[idx];
+      if(p.away) continue;
+      if(fin && !fin.includes(p.id)) continue;
+      const l = S.lists[p.id]; if(!l || !l.length) continue;
+      S.turn = idx; return l.shift();
+    }
+    return null;
+  }
+  function preview(count = 12){
+    const sim = JSON.parse(JSON.stringify({ players:P.players, lists:P.lists, turn:P.turn, force:P.force }));
+    const out = []; for(let i = 0; i < count; i++){ const it = pickNext(sim); if(!it) break; out.push(it); } return out;
+  }
+  function addFor(v, singers, team){
+    const owner = singers[0];
+    const it = { id:v.id, title:v.title, thumb:v.thumb, channel:v.channel||'', singers:[...singers], team: singers.length > 1 ? (team||'') : '', key: uid() };
+    (P.lists[owner] = P.lists[owner] || []).push(it);
+    saveP(); renderQueue(); renderParty();
+    return it;
+  }
+  // добавить песню: в режиме вечеринки — выбранным певцам, иначе — в обычную очередь
+  function addSong(v, opts = {}){
+    if(P.on){
+      const s = opts.singers || P.sel;
+      if(!s.length){ toast('Сначала выберите сверху, кто поёт 👆', 3000); $('partyBar').classList.add('flash'); setTimeout(()=>$('partyBar').classList.remove('flash'), 1200); return null; }
+      const it = addFor(v, s, opts.team ?? P.team);
+      toast('Добавлено: ' + singersText(it));
+      if(!current && !$('splash').classList.contains('show')) playNext(false);
+      return it;
+    }
+    queue.push(v); saveQueue(); renderQueue(); toast('Добавлено в очередь'); if(!current) playNext(false);
+    return v;
+  }
+
+  // ---------- заставка «Поёт …» ----------
+  let splashTimer = 0;
+  function showSplash(it, go){
+    clearInterval(splashTimer);
+    const duet = it.singers.length > 1;
+    if(duet && !$('on2').checked){ $('on2').checked = true; $('on2').dispatchEvent(new Event('change')); }
+    $('splashBody').innerHTML = `
+      <div class="sp-top">${P.final ? '🏆 ФИНАЛ' : (duet ? '👫 Дуэт' : '🎤 Поёт')}</div>
+      ${duet && it.team ? `<div class="sp-team">«${esc(it.team)}»</div>` : ''}
+      <div class="sp-name">${it.singers.map(id => esc(pname(id))).join(' <span>&</span> ')}</div>
+      ${duet ? `<div class="sp-mics">Микрофон 1 — ${esc(pname(it.singers[0]))} · Микрофон 2 — ${esc(pname(it.singers[1]))}</div>` : ''}
+      <div class="sp-song">${esc(it.title)}</div>
+      <div class="sp-count" id="spCount">5</div>`;
+    $('splashAway').textContent = '🚶 ' + pname(it.singers[0]) + ' отошёл → следующий';
+    $('splash').classList.add('show');
+    let left = 5;
+    const start = () => { clearInterval(splashTimer); $('splash').classList.remove('show'); go(); };
+    splashTimer = setInterval(() => { left--; const c = $('spCount'); if(c) c.textContent = left; if(left <= 0) start(); }, 1000);
+    $('splashGo').onclick = start;
+    $('splashAway').onclick = () => {
+      clearInterval(splashTimer); $('splash').classList.remove('show');
+      const p = pl(it.singers[0]); if(p) p.away = true;
+      (P.lists[it.singers[0]] = P.lists[it.singers[0]] || []).unshift(it);
+      saveP(); renderParty(); toast(pname(it.singers[0]) + ' отошёл — его песни подождут', 3000);
+      partyNext(false);
+    };
+  }
+  function partyNext(gesture){
+    if(onBreak) return;
+    const it = pickNext(); saveP(); renderQueue(); renderParty();
+    if(!it){
+      current = null;
+      if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+      $('now').textContent = P.players.some(p => p.away && (P.lists[p.id]||[]).length) ? 'Песни остались только у тех, кто отошёл — отметьте, что они вернулись.' : 'Песни закончились — добавляйте ещё!';
+      return;
+    }
+    if(gesture && $('autoFs').checked) goFs();
+    if(playerReady) player.stopVideo();
+    current = it;
+    showSplash(it, () => load(it));
+  }
+
+  // ---------- оценка в режиме вечеринки ----------
+  function partyResult(song, onDone){
+    const it = current; if(!game.s || !it || !it.singers) return false;
+    const active = [0,1].filter(i => $('on'+(i+1)).checked);
+    let rows = active.map(i => ({ i, r: game.score(game.s[i]) })).filter(x => x.r);
+    if(!rows.length) return false;
+    if(it.singers.length === 1){ rows.sort((a,b)=>b.r.total-a.r.total); rows = [rows[0]]; rows[0].pid = it.singers[0]; }
+    else rows.forEach(x => x.pid = it.singers[x.i] || it.singers[0]);
+    const duel = rows.length > 1, best = Math.max(...rows.map(x=>x.r.total));
+    const team = it.singers.length > 1 ? Math.round(rows.reduce((a,x)=>a+x.r.total,0)/rows.length) : null;
+    const nxt = preview(1)[0];
+    rows.forEach(x => P.scores.push({ pid:x.pid, song:(song||'').replace(/\s*[\(\[].*?[\)\]]/g,'').slice(0,60), score:x.r.total, t:Date.now(), final: !!P.final }));
+    if(P.final){ it.singers.forEach(id => { if(P.final.ids.includes(id)) P.final.done[id] = rows.find(x=>x.pid===id)?.r.total ?? best; }); }
+    saveP(); renderParty();
+    $('resultBody').innerHTML = (team!==null ? `<div class="res-h">👫 ${it.team ? '«'+esc(it.team)+'» — ' : ''}команда: ${team}</div>` : '') + '<div class="res-row">' + rows.map(x => `
+      <div class="res-card ${duel && x.r.total===best ? 'win' : ''}">
+        ${duel && x.r.total===best ? '<div class="crown">👑 Лучше в паре</div>' : ''}
+        <div class="res-name">${esc(pname(x.pid))}</div>
+        <div class="res-score" data-to="${x.r.total}">0</div>
+        <div class="res-stars">${stars(x.r.total)}</div>
+        <div class="res-title">${titleFor(x.r.total)}</div>
+        <div class="res-parts">${x.r.pitch!==null ? `<span>🎯 Чистота ${x.r.pitch}</span>` : ''}<span>🎤 Активность ${x.r.activity}</span><span>💪 Уверенность ${x.r.conf}</span></div>
+      </div>`).join('') + '</div><div class="res-song">' + esc(song||'') + '</div>' +
+      (nxt ? `<div class="res-next">Следующий: <b>${esc(singersText(nxt))}</b> — готовься! 🎤</div>` : '');
+    animateResult(onDone);
+    return true;
+  }
+
+  // ---------- финал и король ----------
+  function stats(){
+    return P.players.map(p => {
+      const s = P.scores.filter(x => x.pid === p.id && !x.final).map(x => x.score);
+      return { p, n:s.length, avg: s.length ? Math.round(s.reduce((a,b)=>a+b,0)/s.length) : 0, best: s.length ? Math.max(...s) : 0 };
+    }).sort((a,b) => b.avg - a.avg || b.best - a.best);
+  }
+  function startFinal(){
+    const st = stats().filter(x => x.n > 0 && !x.p.away);
+    if(st.length < 2){ toast('Для финала нужно хотя бы двое спевших', 3000); return; }
+    const top = st.slice(0, 3);
+    P.final = { ids: top.map(x => x.p.id), done:{} };
+    // первым поёт тот, у кого балл ниже — интрига
+    const order = [...top].reverse().map(x => x.p.id);
+    P.turn = P.players.findIndex(p => p.id === order[0]) - 1;
+    saveP(); renderParty(); renderQueue();
+    const noSong = top.filter(x => !(P.lists[x.p.id]||[]).length).map(x => x.p.name);
+    toast('🏆 ФИНАЛ: ' + top.map(x => x.p.name).join(', ') + (noSong.length ? ' — добавьте финальную песню: ' + noSong.join(', ') : ''), 6000);
+    switchTab('party');
+  }
+  function checkChampion(){
+    if(!P.final) return false;
+    const ids = P.final.ids; if(!ids.every(id => id in P.final.done)) return false;
+    const win = [...ids].sort((a,b) => P.final.done[b] - P.final.done[a])[0];
+    $('champBody').innerHTML = `<div class="ch-crown">👑</div><div class="ch-t">Король караоке</div><div class="ch-name">${esc(pname(win))}</div>
+      <div class="ch-list">${[...ids].sort((a,b)=>P.final.done[b]-P.final.done[a]).map((id,i)=>`<div>${['🥇','🥈','🥉'][i]||''} ${esc(pname(id))} — ${P.final.done[id]}</div>`).join('')}</div>`;
+    $('champ').classList.add('show');
+    P.champion = pname(win); P.final = null; saveP(); renderParty();
+    return true;
+  }
+  $('champClose').onclick = () => { $('champ').classList.remove('show'); partyNext(false); };
+
+  // ---------- перерыв ----------
+  let onBreak = false, breakT = 0, breakStart = 0;
+  function startBreak(){
+    onBreak = true; breakStart = Date.now();
+    try{ if(playerReady) player.pauseVideo(); }catch(e){}
+    clearInterval(splashTimer); clearInterval(resultTimer);
+    $('breakOv').classList.add('show'); $('breakBtn').textContent = '▶ Продолжить';
+    const tick = () => { const s = Math.floor((Date.now()-breakStart)/1000); $('breakTime').textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); };
+    tick(); clearInterval(breakT); breakT = setInterval(tick, 1000);
+  }
+  function endBreak(){
+    onBreak = false; clearInterval(breakT);
+    $('breakOv').classList.remove('show'); $('breakBtn').textContent = '⏸ Перерыв';
+    if($('splash').classList.contains('show') && current){ showSplash(current, () => load(current)); return; }
+    if($('result').classList.contains('show')){ $('resultNext').click(); return; }
+    try{ const s = playerReady ? player.getPlayerState() : -1; if(current && s === 2) player.playVideo(); else if(!current || s === 0 || s === -1 || s === 5) playNext(true); }catch(e){ playNext(true); }
+  }
+  $('breakBtn').onclick = () => onBreak ? endBreak() : startBreak();
+  $('breakGo').onclick = endBreak;
+
+  // ---------- интерфейс вечеринки ----------
+  function renderParty(){
+    // панель «кто поёт»
+    $('partyBar').style.display = P.on ? 'flex' : 'none';
+    P.sel = P.sel.filter(id => pl(id));
+    $('partyChips').innerHTML = P.players.length ? P.players.map(p => `<button class="chip ${P.sel.includes(p.id)?'on':''} ${p.away?'away':''}" data-sel="${p.id}">${esc(p.name)}${p.away?' 🚶':''}</button>`).join('') : '<span class="status">Добавьте игроков во вкладке «🎉 Вечеринка»</span>';
+    $('teamWrap').style.display = P.sel.length > 1 ? 'flex' : 'none';
+    $('teamName').value = P.team || '';
+    $('selHint').textContent = !P.sel.length ? 'нажмите на имя (два имени — дуэт)' : P.sel.length > 1 ? 'дуэт' : 'соло';
+    // вкладка вечеринки
+    $('partyToggle').textContent = P.on ? '🎉 Режим вечеринки: ВКЛ' : '🎉 Включить режим вечеринки';
+    $('partyToggle').classList.toggle('sec', !P.on);
+    $('players').innerHTML = P.players.map(p => `
+      <li><b class="qt">${esc(p.name)}</b><span class="status" style="margin:0 6px">${songsWord((P.lists[p.id]||[]).length)}</span>
+      <button class="btn small ${p.away?'':'sec'}" data-away="${p.id}">${p.away ? '🚶 Отошёл' : '✅ На месте'}</button>
+      <button data-rmp="${p.id}" title="Удалить">✕</button></li>`).join('');
+    const st = stats();
+    $('totals').innerHTML = st.filter(x=>x.n).map((x,i) => `<tr><td>${i===0?'👑':i+1}</td><td>${esc(x.p.name)}</td><td>${x.n}</td><td><b>${x.avg}</b></td><td>${x.best}</td></tr>`).join('') || '<tr><td colspan="5" class="status">Пока никто не пел</td></tr>';
+    $('finalBox').innerHTML = P.final ? `<b>🏆 Идёт финал:</b> ${P.final.ids.map(id => esc(pname(id)) + (id in P.final.done ? ' ✓'+P.final.done[id] : (P.lists[id]||[]).length ? '' : ' <span class="err">(нет песни!)</span>')).join(', ')} <button class="btn small sec" id="finalCancel">Отменить</button>`
+      : (P.champion ? `👑 Король вечера: <b>${esc(P.champion)}</b>` : '');
+    const fc = $('finalCancel'); if(fc) fc.onclick = () => { P.final = null; saveP(); renderParty(); renderQueue(); };
+  }
+  $('partyChips').onclick = e => {
+    const b = e.target.closest('[data-sel]'); if(!b) return;
+    const id = b.dataset.sel, i = P.sel.indexOf(id);
+    if(i >= 0) P.sel.splice(i, 1); else { P.sel.push(id); if(P.sel.length > 2) P.sel.shift(); }
+    saveP(); renderParty();
+  };
+  $('teamName').oninput = () => { P.team = $('teamName').value; saveP(); };
+  $('partyToggle').onclick = () => {
+    P.on = !P.on; saveP();
+    if(P.on){ if(!game.on){ game.on = true; store.set('game', true); renderGameBtn(); } if(!P.players.length) $('newPlayer').focus(); }
+    renderParty(); renderQueue();
+  };
+  $('addPlayerForm').onsubmit = e => {
+    e.preventDefault(); const n = $('newPlayer').value.trim(); if(!n) return;
+    P.players.push({ id: uid(), name: n, away:false }); $('newPlayer').value = ''; saveP(); renderParty();
+  };
+  $('players').onclick = e => {
+    const a = e.target.closest('[data-away]'), r = e.target.closest('[data-rmp]');
+    if(a){ const p = pl(a.dataset.away); p.away = !p.away; saveP(); renderParty(); renderQueue(); }
+    if(r){ const id = r.dataset.rmp; if(!confirmInline(r)) return; P.players = P.players.filter(p => p.id !== id); delete P.lists[id]; saveP(); renderParty(); renderQueue(); }
+  };
+  function confirmInline(btn){ if(btn.dataset.sure) return true; btn.dataset.sure = 1; btn.textContent = 'точно?'; setTimeout(()=>{ delete btn.dataset.sure; btn.textContent='✕'; }, 2500); return false; }
+  $('finalBtn').onclick = startFinal;
+  $('partyReset').onclick = e => { if(!confirmInline(e.target)) return; P.scores = []; P.final = null; P.champion = ''; P.lists = {}; P.turn = -1; P.force = null; saveP(); renderParty(); renderQueue(); e.target.textContent = 'Новая вечеринка (сброс)'; };
+
+  // ---------- рулетка ----------
+  function spin(items, label, done){
+    $('rouLabel').textContent = label; $('rouBtns').innerHTML = ''; $('roulette').classList.add('show');
+    const el = $('rouWheel'); let i = Math.floor(Math.random()*items.length);
+    const total = 26 + Math.floor(Math.random()*8);   // ~3 секунды, замедляясь к концу
+    let step = 0;
+    const tickR = () => {
+      i = (i + 1 + (items.length > 30 ? Math.floor(Math.random()*7) : 0)) % items.length; el.textContent = items[i].label; el.classList.remove('hit');
+      step++;
+      if(step < total){ const t = step/total; setTimeout(tickR, 30 + t*t*t*300); }
+      else { el.classList.add('hit'); done(items[i]); }
+    };
+    tickR();
+  }
+  $('rouClose').onclick = () => $('roulette').classList.remove('show');
+  const rouBtn = (txt, fn, sec) => { const b = document.createElement('button'); b.className = 'btn' + (sec?' sec':''); b.textContent = txt; b.onclick = fn; $('rouBtns').appendChild(b); };
+  // режим 1: песня выбрана — кто поёт?
+  function whoSings(v){
+    const here = P.players.filter(p => !p.away);
+    if(here.length < 2){ toast('Для рулетки нужно хотя бы 2 игрока на месте', 3000); return; }
+    spin(here.map(p => ({ label:p.name, p })), '🎲 Кто поёт «' + v.title.slice(0,50) + '»?', w => {
+      rouBtn('🎤 Поехали сейчас!', () => { $('roulette').classList.remove('show'); const it = { id:v.id, title:v.title, thumb:v.thumb, channel:v.channel||'', singers:[w.p.id], team:'', key:uid() }; P.force = it; saveP(); partyNext(true); });
+      rouBtn('+ В его очередь', () => { $('roulette').classList.remove('show'); addSong(v, { singers:[w.p.id] }); }, true);
+      rouBtn('🔄 Ещё раз', () => whoSings(v), true);
+    });
+  }
+  // режим 2: случайная песня из категории
+  function randomSong(cat){
+    const songs = cat ? cat.songs : CATALOG.flatMap(c => c.songs);
+    spin(songs.map(s => ({ label:s })), '🎲 Случайная песня' + (cat ? ' — ' + cat.name : ''), w => {
+      rouBtn('⚡ Сразу добавить', async () => { $('roulette').classList.remove('show'); await quickAdd(w.label); });
+      rouBtn('🔎 Выбрать версию', () => { $('roulette').classList.remove('show'); runSearch(w.label); }, true);
+      rouBtn('🔄 Ещё раз', () => randomSong(cat), true);
+    });
+  }
+
+  // ---------- каталог ----------
+  const CATALOG = window.KARAOKE_CATALOG || [];
+  let openCat = null;
+  function renderCatalog(){
+    if(!openCat){
+      $('catView').innerHTML = `<div class="row" style="margin-bottom:12px"><button class="btn" id="rndAll">🎲 Случайная песня из всего каталога</button></div>
+        <div class="cats">${CATALOG.map(c => `<button class="cat" data-cat="${c.id}"><span>${c.emoji}</span>${esc(c.name)}<small>${c.songs.length} песен</small></button>`).join('')}</div>`;
+      $('rndAll').onclick = () => randomSong(null);
+      return;
+    }
+    const c = CATALOG.find(x => x.id === openCat);
+    $('catView').innerHTML = `<div class="row" style="margin-bottom:12px"><button class="btn sec" id="catBack">← Все категории</button><b style="font-size:20px">${c.emoji} ${esc(c.name)}</b>
+        <button class="btn" id="rndCat" style="margin-left:auto">🎲 Случайная отсюда</button></div>
+      <input id="catFilter" placeholder="Фильтр по названию или исполнителю…" style="width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#0c0a10;margin-bottom:10px">
+      <ul class="songs">${c.songs.map((s,i) => `<li data-s="${esc(s)}"><span class="qt">${esc(s)}</span>
+        <button class="btn small sec" data-find="${i}">🔎 Версии</button><button class="btn small" data-quick="${i}">⚡ Добавить</button></li>`).join('')}</ul>`;
+    $('catBack').onclick = () => { openCat = null; renderCatalog(); };
+    $('rndCat').onclick = () => randomSong(c);
+    $('catFilter').oninput = () => { const f = $('catFilter').value.toLowerCase(); document.querySelectorAll('.songs li').forEach(li => li.style.display = li.dataset.s.toLowerCase().includes(f) ? '' : 'none'); };
+  }
+  $('catView').onclick = async e => {
+    const cb = e.target.closest('[data-cat]'); if(cb){ openCat = cb.dataset.cat; renderCatalog(); return; }
+    const c = CATALOG.find(x => x.id === openCat); if(!c) return;
+    const f = e.target.closest('[data-find]'), q = e.target.closest('[data-quick]');
+    if(f) runSearch(c.songs[+f.dataset.find]);
+    if(q){ q.disabled = true; await quickAdd(c.songs[+q.dataset.quick]); q.disabled = false; }
+  };
+  // найти и сразу добавить первый вариант
+  async function quickAdd(name){
+    if(!apiKey){ openKey(); return; }
+    if(P.on && !P.sel.length){ toast('Сначала выберите сверху, кто поёт 👆', 3000); return; }
+    try{ const r = await cachedSearch(name); if(!r.length){ toast('Не нашлось караоке-версии 😕'); return; } addSong(r[0]); }
+    catch(err){ toast(err.message, 4000); }
+  }
+
+  // ---------- наши песни: история и избранное ----------
+  let hist = store.get('hist', {}), fav = store.get('fav', {});
+  function remember(v){ const h = hist[v.id] || { id:v.id, title:v.title, thumb:v.thumb, channel:v.channel||'', n:0 }; h.n++; h.last = Date.now(); hist[v.id] = h; store.set('hist', hist); }
+  function toggleFav(v){ if(fav[v.id]) delete fav[v.id]; else fav[v.id] = { id:v.id, title:v.title, thumb:v.thumb, channel:v.channel||'' }; store.set('fav', fav); renderMine(); }
+  let mineList = [];
+  function renderMine(){
+    const favs = Object.values(fav), top = Object.values(hist).sort((a,b) => b.n - a.n || b.last - a.last);
+    mineList = [...favs, ...top];
+    const card = (v, i) => `<div class="card"><img src="${v.thumb}" data-mplay="${i}" alt=""><div class="t">${esc(v.title)}</div>
+      <div class="c">${v.n ? 'пели ' + v.n + ' раз' : ''}</div><div class="a"><button class="btn small" data-madd="${i}">+ В очередь</button>
+      <button class="btn small sec" data-mfav="${i}">${fav[v.id] ? '★' : '☆'}</button>${P.on ? `<button class="btn small sec" data-mwho="${i}">🎲</button>` : ''}</div></div>`;
+    $('mineView').innerHTML = `<div class="hint">Эти песни включаются без расхода лимита поиска.</div>
+      <h3 class="sub">⭐ Избранное</h3>${favs.length ? '<div class="grid">' + favs.map((v,i)=>card(v,i)).join('') + '</div>' : '<div class="status">Нажмите ☆ у песни, чтобы добавить её сюда.</div>'}
+      <h3 class="sub">🕘 Чаще всего пели</h3>${top.length ? '<div class="grid">' + top.map((v,i)=>card(v,i+favs.length)).join('') + '</div>' : '<div class="status">Здесь появятся спетые песни.</div>'}
+      ${top.length ? '<button class="btn small sec" id="histClear" style="margin-top:12px">Очистить историю</button>' : ''}`;
+    const hc = $('histClear'); if(hc) hc.onclick = e => { if(!confirmInline(e.target)) return; hist = {}; store.set('hist', hist); renderMine(); };
+  }
+  $('mineView').onclick = e => {
+    const a = e.target.closest('[data-madd]'), f = e.target.closest('[data-mfav]'), w = e.target.closest('[data-mwho]'), p = e.target.closest('[data-mplay]');
+    if(a) addSong(mineList[+a.dataset.madd]);
+    if(p) addSong(mineList[+p.dataset.mplay]);
+    if(f) toggleFav(mineList[+f.dataset.mfav]);
+    if(w) whoSings(mineList[+w.dataset.mwho]);
+  };
+
+  // ---------- вкладки ----------
+  function switchTab(t){
+    document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('sec', b.dataset.tab !== t));
+    ['search','cat','mine','party'].forEach(x => $('tab-'+x).style.display = x === t ? 'block' : 'none');
+    if(t === 'cat') renderCatalog(); if(t === 'mine') renderMine(); if(t === 'party') renderParty();
+    store.set('tab', t);
+  }
+  document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+  window.__party = { P, partyNext, partyResult, checkChampion, addSong, whoSings, remember, toggleFav, isFav: id => !!fav[id], renderParty, preview, singersText, switchTab, onBreak: () => onBreak };
+  renderParty(); renderQueue(); switchTab(store.get('tab', 'search'));
 
   // ---------- Microphones (2 входа), эффекты, автотюн ----------
   let ctx=null, stream=null, nodes=null, meterRaf=0, revBufKey='', workletReady=null;

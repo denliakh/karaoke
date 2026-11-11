@@ -1,6 +1,6 @@
 // Кэш программы: приложение открывается даже когда мини-сервер не запущен
-const CACHE = 'karaoke-v7';
-const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'tuner-worklet.js'];
+const CACHE = 'karaoke-v8';
+const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'tuner-worklet.js', 'catalog.js'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', e => {
