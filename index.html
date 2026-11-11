@@ -206,6 +206,7 @@
         <button class="btn small sec" id="gameBtn">🏆 Игра</button>
         <button class="btn small sec" id="breakBtn">⏸ Перерыв</button>
         <button class="btn small sec" id="stageBtn">📺 Второй экран</button>
+        <button class="btn small sec" id="catNow" title="Добавить играющую песню в каталог">📚+ В каталог</button>
       </div>
       <label class="switch"><input type="checkbox" id="autoFs" checked> Сразу на весь экран при запуске песни</label>
       <div class="kbd">Клавиши: F — весь экран, N — следующая, пробел — пауза (когда фокус не в поиске)</div>
@@ -301,6 +302,16 @@
 <div class="modal" id="roulette"><div class="box"><div id="rouLabel"></div><div id="rouWheel">🎲</div><div id="rouBtns"></div>
   <button class="btn small sec" id="rouClose" style="margin-top:14px">Закрыть</button></div></div>
 
+<div class="modal" id="catPick"><div class="box">
+  <h2 id="cpTitle" style="font-size:20px">📚 В какую категорию?</h2>
+  <div id="cpList" class="row" style="margin:12px 0"></div>
+  <div class="status">Или создайте новую:</div>
+  <div class="row" style="flex-wrap:nowrap;margin-top:6px"><input id="cpNewEmoji" value="⭐" style="width:60px;text-align:center;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0c0a10;font-size:18px">
+    <input id="cpNewName" placeholder="Название, например «Наши хиты»" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0c0a10">
+    <button class="btn small" id="cpCreate">Создать</button></div>
+  <button class="btn small sec" id="cpClose" style="margin-top:14px">Закрыть</button>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script src="catalog.js"></script>
@@ -390,13 +401,15 @@
         <div class="a">
           <button class="btn small" data-play="${i}">▶ Петь</button>
           <button class="btn small sec" data-add="${i}">+ В очередь</button>
+          <button class="btn small sec" data-cat2="${i}" title="В каталог">📚+</button>
           <button class="btn small sec" data-fav="${i}" title="В избранное">${window.__party && window.__party.isFav(v.id) ? '★' : '☆'}</button>
           ${window.__party && window.__party.P.on ? `<button class="btn small sec" data-who="${i}" title="Рулетка: кто поёт?">🎲</button>` : ''}
         </div>
       </div>`).join('');
   }
   $('results').onclick = e => {
-    const p = e.target.closest('[data-play]'), a = e.target.closest('[data-add]'), f = e.target.closest('[data-fav]'), w = e.target.closest('[data-who]');
+    const p = e.target.closest('[data-play]'), a = e.target.closest('[data-add]'), f = e.target.closest('[data-fav]'), w = e.target.closest('[data-who]'), c2 = e.target.closest('[data-cat2]');
+    if(c2){ window.__party.openCatPick(lastResults[+c2.dataset.cat2]); return; }
     const pt = window.__party;
     if(p){
       const v = lastResults[+p.dataset.play];
@@ -990,41 +1003,90 @@
   }
   // режим 2: случайная песня из категории
   function randomSong(cat){
-    const songs = cat ? cat.songs : CATALOG.flatMap(c => c.songs);
-    spin(songs.map(s => ({ label:s })), '🎲 Случайная песня' + (cat ? ' — ' + cat.name : ''), w => {
+    const cats = cat ? [cat] : allCats();
+    const pool = [...cats.flatMap(c => (mySongs[c.id]||[]).map(v => ({ label:v.title, v }))), ...cats.flatMap(c => c.songs.map(s => ({ label:s })))];
+    if(!pool.length){ toast('В этой категории пока нет песен'); return; }
+    spin(pool, '🎲 Случайная песня' + (cat ? ' — ' + cat.name : ''), w => {
+      if(w.v){ rouBtn('⚡ Добавить', () => { $('roulette').classList.remove('show'); addSong(w.v); }); rouBtn('🔄 Ещё раз', () => randomSong(cat), true); return; }
       rouBtn('⚡ Сразу добавить', async () => { $('roulette').classList.remove('show'); await quickAdd(w.label); });
       rouBtn('🔎 Выбрать версию', () => { $('roulette').classList.remove('show'); runSearch(w.label); }, true);
       rouBtn('🔄 Ещё раз', () => randomSong(cat), true);
     });
   }
 
-  // ---------- каталог ----------
+  // ---------- каталог (встроенный + свой) ----------
   const CATALOG = window.KARAOKE_CATALOG || [];
+  let myCats = store.get('mycats', []), mySongs = store.get('mysongs', {});
+  const saveMy = () => { store.set('mycats', myCats); store.set('mysongs', mySongs); };
+  const allCats = () => [...myCats.map(c => ({ ...c, songs:[], mine:true })), ...CATALOG];
+  const catCount = c => c.songs.length + (mySongs[c.id]||[]).length;
   let openCat = null;
   function renderCatalog(){
     if(!openCat){
-      $('catView').innerHTML = `<div class="row" style="margin-bottom:12px"><button class="btn" id="rndAll">🎲 Случайная песня из всего каталога</button></div>
-        <div class="cats">${CATALOG.map(c => `<button class="cat" data-cat="${c.id}"><span>${c.emoji}</span>${esc(c.name)}<small>${c.songs.length} песен</small></button>`).join('')}</div>`;
+      $('catView').innerHTML = `<div class="row" style="margin-bottom:12px"><button class="btn" id="rndAll">🎲 Случайная песня из всего каталога</button><button class="btn sec" id="newCatBtn">+ Своя категория</button></div>
+        <div class="cats">${allCats().map(c => `<button class="cat" data-cat="${c.id}"><span>${c.emoji}</span>${esc(c.name)}<small>${songsWord(catCount(c))}${(mySongs[c.id]||[]).length ? ' · ваших ' + mySongs[c.id].length : ''}</small></button>`).join('')}</div>
+        <div class="status" style="margin-top:12px">Добавляйте свои песни кнопкой <b>📚+</b> у найденной или играющей песни — они включаются без расхода лимита поиска.</div>`;
       $('rndAll').onclick = () => randomSong(null);
+      $('newCatBtn').onclick = () => openCatPick(null);
       return;
     }
-    const c = CATALOG.find(x => x.id === openCat);
+    const c = allCats().find(x => x.id === openCat); if(!c){ openCat = null; return renderCatalog(); }
+    const mine = mySongs[c.id] || [];
     $('catView').innerHTML = `<div class="row" style="margin-bottom:12px"><button class="btn sec" id="catBack">← Все категории</button><b style="font-size:20px">${c.emoji} ${esc(c.name)}</b>
         <button class="btn" id="rndCat" style="margin-left:auto">🎲 Случайная отсюда</button></div>
       <input id="catFilter" placeholder="Фильтр по названию или исполнителю…" style="width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#0c0a10;margin-bottom:10px">
-      <ul class="songs">${c.songs.map((s,i) => `<li data-s="${esc(s)}"><span class="qt">${esc(s)}</span>
-        <button class="btn small sec" data-find="${i}">🔎 Версии</button><button class="btn small" data-quick="${i}">⚡ Добавить</button></li>`).join('')}</ul>`;
+      ${mine.length ? `<h3 class="sub" style="margin-top:4px">▶ Ваши песни — без поиска</h3><ul class="songs">${mine.map((v,i) => `<li data-s="${esc(v.title)}">
+        <img src="${v.thumb}" alt="" style="width:64px;height:36px;object-fit:cover;border-radius:6px"><span class="qt">${esc(v.title)}</span>
+        ${P.on ? `<button class="btn small sec" data-mwho2="${i}" title="Рулетка: кто поёт">🎲</button>` : ''}<button class="btn small" data-madd2="${i}">+ В очередь</button><button class="btn small sec" data-mrm="${i}" title="Убрать из категории">✕</button></li>`).join('')}</ul>` : ''}
+      ${c.songs.length ? `${mine.length ? '<h3 class="sub">📖 Из каталога</h3>' : ''}<ul class="songs">${c.songs.map((s,i) => `<li data-s="${esc(s)}"><span class="qt">${esc(s)}</span>
+        <button class="btn small sec" data-find="${i}">🔎 Версии</button><button class="btn small" data-quick="${i}">⚡ Добавить</button></li>`).join('')}</ul>` : ''}
+      ${!mine.length && !c.songs.length ? '<div class="status">Пока пусто. Найдите песню и нажмите 📚+ → эта категория.</div>' : ''}
+      ${c.mine ? '<button class="btn small sec" id="delCat" style="margin-top:14px">Удалить категорию</button>' : ''}`;
     $('catBack').onclick = () => { openCat = null; renderCatalog(); };
     $('rndCat').onclick = () => randomSong(c);
     $('catFilter').oninput = () => { const f = $('catFilter').value.toLowerCase(); document.querySelectorAll('.songs li').forEach(li => li.style.display = li.dataset.s.toLowerCase().includes(f) ? '' : 'none'); };
+    const dc = $('delCat'); if(dc) dc.onclick = e => { if(!confirmInline(e.target)) return; myCats = myCats.filter(x => x.id !== c.id); delete mySongs[c.id]; saveMy(); openCat = null; renderCatalog(); };
   }
   $('catView').onclick = async e => {
     const cb = e.target.closest('[data-cat]'); if(cb){ openCat = cb.dataset.cat; renderCatalog(); return; }
-    const c = CATALOG.find(x => x.id === openCat); if(!c) return;
+    const c = allCats().find(x => x.id === openCat); if(!c) return;
+    const mine = mySongs[c.id] || [];
     const f = e.target.closest('[data-find]'), q = e.target.closest('[data-quick]');
+    const ma = e.target.closest('[data-madd2]'), mw = e.target.closest('[data-mwho2]'), mr = e.target.closest('[data-mrm]');
     if(f) runSearch(c.songs[+f.dataset.find]);
     if(q){ q.disabled = true; await quickAdd(c.songs[+q.dataset.quick]); q.disabled = false; }
+    if(ma) addSong(mine[+ma.dataset.madd2]);
+    if(mw) whoSings(mine[+mw.dataset.mwho2]);
+    if(mr){ if(!confirmInline(mr)) return; mine.splice(+mr.dataset.mrm, 1); saveMy(); renderCatalog(); }
   };
+
+  // выбор категории для песни (или создание новой)
+  let pickFor = null;
+  function openCatPick(v){
+    pickFor = v;
+    $('cpTitle').textContent = v ? '📚 В какую категорию добавить «' + v.title.slice(0, 60) + '»?' : '📚 Новая категория';
+    $('cpList').innerHTML = v ? allCats().map(c => `<button class="chip ${(mySongs[c.id]||[]).some(x=>x.id===v.id)?'on':''}" data-pick="${c.id}">${c.emoji} ${esc(c.name)}</button>`).join('') : '';
+    $('cpNewName').value = ''; $('cpNewEmoji').value = '⭐';
+    $('catPick').classList.add('show');
+    if(!v) $('cpNewName').focus();
+  }
+  function addToCat(v, catId){
+    const l = mySongs[catId] = mySongs[catId] || [];
+    if(l.some(x => x.id === v.id)){ toast('Эта песня уже есть в категории'); return; }
+    l.unshift({ id:v.id, title:v.title, thumb:v.thumb, channel:v.channel||'' }); saveMy();
+    const c = allCats().find(x => x.id === catId);
+    toast('📚 Добавлено в «' + (c ? c.name : '') + '» — теперь без расхода лимита');
+  }
+  $('cpList').onclick = e => { const b = e.target.closest('[data-pick]'); if(!b || !pickFor) return; addToCat(pickFor, b.dataset.pick); $('catPick').classList.remove('show'); if(openCat) renderCatalog(); };
+  $('cpCreate').onclick = () => {
+    const name = $('cpNewName').value.trim(); if(!name){ $('cpNewName').focus(); return; }
+    const c = { id: 'my-' + uid(), name, emoji: ($('cpNewEmoji').value.trim() || '⭐').slice(0, 4) };
+    myCats.push(c); saveMy();
+    if(pickFor) addToCat(pickFor, c.id); else toast('Категория «' + name + '» создана');
+    $('catPick').classList.remove('show'); if(store.get('tab') === 'cat') renderCatalog();
+  };
+  $('cpClose').onclick = () => $('catPick').classList.remove('show');
+  $('catNow').onclick = () => { if(current && current.id) openCatPick(current); else toast('Сейчас ничего не играет'); };
   // найти и сразу добавить первый вариант
   async function quickAdd(name){
     if(!apiKey){ openKey(); return; }
@@ -1043,7 +1105,7 @@
     mineList = [...favs, ...top];
     const card = (v, i) => `<div class="card"><img src="${v.thumb}" data-mplay="${i}" alt=""><div class="t">${esc(v.title)}</div>
       <div class="c">${v.n ? 'пели ' + v.n + ' раз' : ''}</div><div class="a"><button class="btn small" data-madd="${i}">+ В очередь</button>
-      <button class="btn small sec" data-mfav="${i}">${fav[v.id] ? '★' : '☆'}</button>${P.on ? `<button class="btn small sec" data-mwho="${i}">🎲</button>` : ''}</div></div>`;
+      <button class="btn small sec" data-mfav="${i}">${fav[v.id] ? '★' : '☆'}</button><button class="btn small sec" data-mcat="${i}" title="В каталог">📚+</button>${P.on ? `<button class="btn small sec" data-mwho="${i}">🎲</button>` : ''}</div></div>`;
     $('mineView').innerHTML = `<div class="hint">Эти песни включаются без расхода лимита поиска.</div>
       <h3 class="sub">⭐ Избранное</h3>${favs.length ? '<div class="grid">' + favs.map((v,i)=>card(v,i)).join('') + '</div>' : '<div class="status">Нажмите ☆ у песни, чтобы добавить её сюда.</div>'}
       <h3 class="sub">🕘 Чаще всего пели</h3>${top.length ? '<div class="grid">' + top.map((v,i)=>card(v,i+favs.length)).join('') + '</div>' : '<div class="status">Здесь появятся спетые песни.</div>'}
@@ -1056,6 +1118,7 @@
     if(p) addSong(mineList[+p.dataset.mplay]);
     if(f) toggleFav(mineList[+f.dataset.mfav]);
     if(w) whoSings(mineList[+w.dataset.mwho]);
+    const mc = e.target.closest('[data-mcat]'); if(mc) openCatPick(mineList[+mc.dataset.mcat]);
   };
 
   // ---------- вкладки ----------
@@ -1067,7 +1130,7 @@
   }
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
-  window.__party = { P, partyNext, partyResult, checkChampion, addSong, whoSings, remember, toggleFav, isFav: id => !!fav[id], renderParty, preview, singersText, switchTab, onBreak: () => onBreak };
+  window.__party = { openCatPick, P, partyNext, partyResult, checkChampion, addSong, whoSings, remember, toggleFav, isFav: id => !!fav[id], renderParty, preview, singersText, switchTab, onBreak: () => onBreak };
   renderParty(); renderQueue(); switchTab(store.get('tab', 'search'));
 
   // ---------- Microphones (2 входа), эффекты, автотюн ----------
