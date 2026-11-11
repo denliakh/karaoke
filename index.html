@@ -165,6 +165,19 @@
   #chatList i{color:var(--muted)}
   body.guest .host-only, body.guest #nextBtn, body.guest #pauseBtn, body.guest #gameBtn, body.guest #breakBtn, body.guest #catNow,
   body.guest [data-tab="party"], body.guest #partyBar, body.guest label:has(#autoFs), body.guest .kbd{display:none!important}
+  .pcard{display:block!important;padding:12px 0!important}
+  .queue li button.btn{font-size:14px;color:#fff;padding:8px 12px}
+  .queue li button.btn:not(.sec){background:linear-gradient(180deg,rgba(255,255,255,.32) 0%,rgba(255,255,255,0) 46%),var(--grad)}
+  .queue li button.btn.sec{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+  .prow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .pgen{font-size:14px;margin-top:8px;color:var(--muted)}
+  .linkbtn{background:none;border:none;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:14px;padding:0 4px}
+  .gchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip.small{padding:5px 10px;font-size:13px}
+  .plist{margin:8px 0 0;padding-left:22px;font-size:14px;color:var(--text)}
+  .plist li{display:flex!important;gap:6px;align-items:center;padding:3px 0!important;border:none!important}
+  .sugg{display:flex;flex-wrap:wrap;gap:clamp(4px,1cqw,10px);justify-content:center;margin-top:clamp(6px,1.5cqw,16px);max-width:94%}
+  .sugg .btn{font-size:clamp(10px,1.7cqw,18px);padding:clamp(5px,1cqw,12px) clamp(8px,1.6cqw,18px)}
   .kbd{font-size:12px;color:var(--muted);margin-top:8px}
   .ov .res-btns .btn,#result .res-btns .btn{font-size:clamp(11px,2.2cqw,20px);padding:clamp(6px,1.2cqw,14px) clamp(10px,2cqw,22px)}
   .ov,#result{padding:clamp(6px,2cqw,24px)}
@@ -200,10 +213,13 @@
     <section id="tab-mine" style="display:none"><div id="mineView"></div></section>
     <section id="tab-party" style="display:none">
       <button class="btn" id="partyToggle">🎉 Включить режим вечеринки</button>
-      <div class="hint" style="margin-top:10px">Впишите игроков → каждому добавляйте песни (выберите имя сверху; два имени — дуэт) → программа ставит всех по кругу, перед песней показывает, кто поёт, а в конце — оценку.</div>
+      <div class="hint" style="margin-top:10px">Пока все в настроении: впишите игроков, отметьте, кто что любит, и нажмите «⚡ Заготовить всем» — или добавьте каждому свои песни. Дальше программа ставит всех по кругу, перед песней показывает, кто поёт, а в конце — оценку.</div>
       <label class="switch" style="margin-top:10px"><input type="checkbox" id="chooseMode"> Выбор в свой ход — если у игрока нет песни, ждём, пока он выберет (иначе — пропускаем его)</label>
       <h3 class="sub">👥 Игроки</h3>
       <form id="addPlayerForm" class="row"><input id="newPlayer" placeholder="Имя игрока" autocomplete="off"><button class="btn small" type="submit">+ Добавить</button></form>
+      <div class="row" style="margin-top:12px;align-items:center"><button class="btn small" id="fillAll">⚡ Заготовить всем</button>
+        <span class="status" style="margin:0">по</span><select id="fillN" style="width:auto;padding:6px 10px"><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+        <span class="status" style="margin:0">песни — из их любимых жанров</span></div>
       <ul class="queue" id="players" style="margin-top:8px"></ul>
       <h3 class="sub">📊 Итоги вечера</h3>
       <table class="tbl"><thead><tr><th></th><th>Игрок</th><th>Песен</th><th>Средний</th><th>Лучший</th></tr></thead><tbody id="totals"></tbody></table>
@@ -1126,7 +1142,7 @@
     P.waiting = pid; P.sel = [pid]; P.team = ''; saveP(); renderParty(); renderQueue();
     $('splashBody').innerHTML = `<div class="sp-top">${P.final ? '🏆 Финал — ' : ''}Твой ход!</div>
       <div class="sp-name">${esc(pname(pid))}</div>
-      <div class="sp-song"><span class="main-only">Выбирай песню слева 👈</span><span class="stage-only">выбирает песню… 🤔</span></div>`;
+      <div class="sp-song"><span class="main-only">Выбери подсказку или найди своё слева 👈</span><span class="stage-only">выбирает песню… 🤔</span></div>` + (turnSugg = suggestFor(pid), renderSugg());
     $('splashGo').textContent = '🎲 Случайная песня';
     $('splashGo').onclick = () => randomSong(null);
     $('splashAway').textContent = '⏭ Пропустить ход';
@@ -1136,7 +1152,7 @@
     $('splashAway2').onclick = () => { const p = pl(pid); if(p) p.away = true; P.waiting = null; saveP(); toast(pname(pid) + ' отошёл'); partyNext(false); };
     $('emptyPlayer').style.display='none'; $('splash').classList.add('show');
     $('now').innerHTML = '🎤 Ход: <b>' + esc(pname(pid)) + '</b> — выбирает песню';
-    toast('🎤 ' + pname(pid) + ', твой ход! Найди песню и нажми ▶ Петь или + (для дуэта нажми сверху ещё одно имя)', 6000);
+    toast('🎤 ' + pname(pid) + ', твой ход! Нажми подсказку на экране или найди своё (для дуэта нажми сверху ещё одно имя)', 6000);
     if(store.get('tab','search') === 'party') switchTab('cat');
   }
   function partyNext(gesture){
@@ -1237,6 +1253,60 @@
   $('breakBtn').onclick = () => onBreak ? endBreak() : startBreak();
   $('breakGo').onclick = endBreak;
 
+  // ---------- подбор песен ----------
+  let openGenres = null; const usedNames = new Set();
+  const shuffle = a => { for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  function poolFor(pid){
+    const p = pl(pid) || {}; const g = p.genres || [];
+    const cats = g.length ? allCats().filter(c => g.includes(c.id)) : allCats();
+    const busy = new Set(Object.values(P.lists).flat().map(x => x.id));
+    const free = cats.flatMap(c => (mySongs[c.id] || []).map(v => ({ v, label: v.title }))).filter(x => !busy.has(x.v.id));
+    const text = cats.flatMap(c => c.songs.map(s => ({ s, label: s }))).filter(x => !usedNames.has(x.s));
+    return { free: shuffle(free), text: shuffle(text) };
+  }
+  async function autoPick(pid, n){
+    const p = pl(pid); if(!p) return;
+    if(!apiKey && !isGuest()){ openKey(); return; }
+    const { free, text } = poolFor(pid);
+    const picks = [...free.slice(0, Math.ceil(n/2)), ...text].slice(0, n);
+    let added = 0;
+    for(const x of picks){
+      try{
+        let v = x.v;
+        if(!v){ usedNames.add(x.s); const r = await cachedSearch(x.s); v = r[0]; }
+        if(v){ addFor(v, [pid]); added++; }
+      }catch(err){ toast(err.message, 5000); break; }
+    }
+    toast('🎲 ' + p.name + ': подобрано ' + songsWord(added), 2500);
+    return added;
+  }
+  async function fillAll(){
+    const n = +$('fillN').value || 3; const btn = $('fillAll'); btn.disabled = true;
+    for(const p of P.players.filter(x => !x.away)){
+      const have = (P.lists[p.id] || []).length;
+      if(have < n){ btn.textContent = '⏳ ' + p.name + '…'; const got = await autoPick(p.id, n - have); if(got === undefined) break; }
+    }
+    btn.disabled = false; btn.textContent = '⚡ Заготовить всем'; toast('⚡ Готово! У всех есть песни — можно жать «Поехали»', 4000);
+  }
+  // три подсказки на экране «Твой ход»: сначала свои песни и история (без лимита), потом каталог
+  let turnSugg = [];
+  function suggestFor(pid){
+    const { free, text } = poolFor(pid);
+    const h = shuffle(Object.values(hist)).filter(v => !free.some(x => x.v.id === v.id)).slice(0, 2).map(v => ({ v, label: v.title }));
+    return [...free.slice(0, 2), ...h, ...text].slice(0, 3);
+  }
+  function renderSugg(){
+    return `<div class="main-only sugg">${turnSugg.map((x,i) => `<button class="btn small" data-sug="${i}">${x.v ? '▶ ' : '🎤 '}${esc(x.label.replace(/\s*[\(\[].*?[\)\]]/g, '').slice(0, 42))}</button>`).join('')}
+      <button class="btn small sec" data-sug="re" title="Другие варианты">🔄</button></div>`;
+  }
+  $('splashBody').addEventListener('click', async e => {
+    const b = e.target.closest('[data-sug]'); if(!b || !P.waiting) return;
+    if(b.dataset.sug === 're'){ turnSugg = suggestFor(P.waiting); const s = $('splashBody').querySelector('.sugg'); if(s) s.outerHTML = renderSugg(); return; }
+    const x = turnSugg[+b.dataset.sug]; if(!x) return;
+    P.sel = [P.waiting]; b.disabled = true;
+    if(x.v) addSong(x.v); else { usedNames.add(x.s); await quickAdd(x.s); }
+  });
+
   // ---------- интерфейс вечеринки ----------
   function renderParty(){
     // панель «кто поёт»
@@ -1249,10 +1319,19 @@
     // вкладка вечеринки
     $('partyToggle').textContent = P.on ? '🎉 Режим вечеринки: ВКЛ' : '🎉 Включить режим вечеринки';
     $('partyToggle').classList.toggle('sec', !P.on);
-    $('players').innerHTML = P.players.map(p => `
-      <li><b class="qt">${esc(p.name)}</b><span class="status" style="margin:0 6px">${songsWord((P.lists[p.id]||[]).length)}</span>
-      <button class="btn small ${p.away?'':'sec'}" data-away="${p.id}">${p.away ? '🚶 Отошёл' : '✅ На месте'}</button>
-      <button data-rmp="${p.id}" title="Удалить">✕</button></li>`).join('');
+    $('players').innerHTML = P.players.map(p => {
+      const l = P.lists[p.id] || [], g = p.genres || [], open = openGenres === p.id;
+      return `<li class="pcard"><div class="prow"><b class="qt" style="font-size:17px">${esc(p.name)}</b>
+        <span class="status" style="margin:0 4px">${songsWord(l.length)}</span>
+        <button class="btn small" data-addfor="${p.id}">+ Песню</button>
+        <button class="btn small sec" data-pick3="${p.id}">🎲 Подобрать 3</button>
+        <button class="btn small ${p.away?'':'sec'}" data-away="${p.id}">${p.away ? '🚶 Отошёл' : '✅ На месте'}</button>
+        <button data-rmp="${p.id}" title="Удалить">✕</button></div>
+        <div class="pgen">🎵 Любит: ${g.length ? g.map(id => esc((allCats().find(c => c.id === id) || {}).name || '')).join(', ') : '<i>всё подряд</i>'}
+          <button class="linkbtn" data-genres="${p.id}">${open ? 'готово' : 'выбрать жанры'}</button></div>
+        ${open ? `<div class="gchips">${allCats().map(c => `<button class="chip small ${g.includes(c.id)?'on':''}" data-g="${p.id}|${c.id}">${c.emoji} ${esc(c.name)}</button>`).join('')}</div>` : ''}
+        ${l.length ? `<ol class="plist">${l.map((it,i) => `<li><span class="qt">${it.singers.length>1 ? '👫 ' : ''}${esc(it.title)}</span><button data-pup="${p.id}|${i}" title="Выше">↑</button><button data-pdel2="${p.id}|${i}" title="Убрать">✕</button></li>`).join('')}</ol>` : ''}
+      </li>`; }).join('');
     const st = stats();
     $('totals').innerHTML = st.filter(x=>x.n).map((x,i) => `<tr><td>${i===0?'👑':i+1}</td><td>${esc(x.p.name)}</td><td>${x.n}</td><td><b>${x.avg}</b></td><td>${x.best}</td></tr>`).join('') || '<tr><td colspan="5" class="status">Пока никто не пел</td></tr>';
     $('finalBox').innerHTML = P.final ? `<b>🏆 Идёт финал:</b> ${P.final.ids.map(id => esc(pname(id)) + (id in P.final.done ? ' ✓'+P.final.done[id] : (P.lists[id]||[]).length ? '' : ' <span class="err">(нет песни!)</span>')).join(', ')} <button class="btn small sec" id="finalCancel">Отменить</button>`
@@ -1279,12 +1358,21 @@
     P.players.push({ id: uid(), name: n, away:false }); $('newPlayer').value = ''; saveP(); renderParty();
   };
   $('players').onclick = e => {
+    const af = e.target.closest('[data-addfor]'), p3 = e.target.closest('[data-pick3]'), gb = e.target.closest('[data-genres]'), gc = e.target.closest('[data-g]'),
+          pu = e.target.closest('[data-pup]'), pdl = e.target.closest('[data-pdel2]');
+    if(af){ const id = af.dataset.addfor; P.sel = [id]; P.team = ''; saveP(); renderParty(); switchTab('cat'); toast('Добавляем песни для: ' + pname(id) + ' — выбирайте в каталоге или поиске, «+» добавляет ему', 4500); return; }
+    if(p3){ p3.disabled = true; autoPick(p3.dataset.pick3, 3).finally(() => { p3.disabled = false; }); return; }
+    if(gb){ openGenres = openGenres === gb.dataset.genres ? null : gb.dataset.genres; renderParty(); return; }
+    if(gc){ const [pid, cid] = gc.dataset.g.split('|'); const pp = pl(pid); pp.genres = pp.genres || []; const i = pp.genres.indexOf(cid); i >= 0 ? pp.genres.splice(i,1) : pp.genres.push(cid); saveP(); renderParty(); return; }
+    if(pu){ const [pid, i] = pu.dataset.pup.split('|'); const l = P.lists[pid]; const k = +i; if(k > 0){ [l[k-1], l[k]] = [l[k], l[k-1]]; saveP(); renderParty(); renderQueue(); } return; }
+    if(pdl){ const [pid, i] = pdl.dataset.pdel2.split('|'); P.lists[pid].splice(+i, 1); saveP(); renderParty(); renderQueue(); return; }
     const a = e.target.closest('[data-away]'), r = e.target.closest('[data-rmp]');
     if(a){ const p = pl(a.dataset.away); p.away = !p.away; saveP(); renderParty(); renderQueue(); }
     if(r){ const id = r.dataset.rmp; if(!confirmInline(r)) return; P.players = P.players.filter(p => p.id !== id); delete P.lists[id]; saveP(); renderParty(); renderQueue(); }
   };
   function confirmInline(btn){ if(btn.dataset.sure) return true; btn.dataset.sure = 1; btn.textContent = 'точно?'; setTimeout(()=>{ delete btn.dataset.sure; btn.textContent='✕'; }, 2500); return false; }
   $('finalBtn').onclick = startFinal;
+  $('fillAll').onclick = () => { if(!P.players.length){ toast('Сначала добавьте игроков'); return; } fillAll(); };
   $('startParty').onclick = () => { if(!P.on){ $('partyToggle').click(); } if(!P.players.length){ toast('Сначала добавьте игроков'); return; } partyNext(true); };
   $('partyReset').onclick = e => { if(!confirmInline(e.target)) return; P.scores = []; P.final = null; P.champion = ''; P.lists = {}; P.turn = -1; P.force = null; saveP(); renderParty(); renderQueue(); e.target.textContent = 'Новая вечеринка (сброс)'; };
 
@@ -1449,7 +1537,8 @@
   // ---------- Microphones (2 входа), эффекты, автотюн ----------
   let ctx=null, stream=null, nodes=null, meterRaf=0, revBufKey='', workletReady=null;
   const sliders = ['music','voice','vol1','vol2','echo','echoTime','rev','atStrength'];
-  const defaults = { music:80, voice:100, vol1:100, vol2:100, echo:15, echoTime:220, rev:35, atStrength:55 };
+  const defaults = { music:80, voice:100, vol1:100, vol2:100, echo:15, echoTime:220, rev:35, atStrength:30 };
+  if(!store.get('atMig1', false)){ if(+store.get('atStrength', 0) === 55) store.set('atStrength', 30); store.set('atMig1', true); }
   sliders.forEach(id => { const v = store.get(id, null); $(id).value = v!==null ? v : defaults[id]; });
   const checks = { comp:true, blend:true, agc:true, on1:true, on2:false, at1:false, at2:false };
   Object.keys(checks).forEach(id => $(id).checked = store.get(id, checks[id]));

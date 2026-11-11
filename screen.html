@@ -161,6 +161,19 @@
   #chatList i{color:var(--muted)}
   body.guest .host-only, body.guest #nextBtn, body.guest #pauseBtn, body.guest #gameBtn, body.guest #breakBtn, body.guest #catNow,
   body.guest [data-tab="party"], body.guest #partyBar, body.guest label:has(#autoFs), body.guest .kbd{display:none!important}
+  .pcard{display:block!important;padding:12px 0!important}
+  .queue li button.btn{font-size:14px;color:#fff;padding:8px 12px}
+  .queue li button.btn:not(.sec){background:linear-gradient(180deg,rgba(255,255,255,.32) 0%,rgba(255,255,255,0) 46%),var(--grad)}
+  .queue li button.btn.sec{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+  .prow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .pgen{font-size:14px;margin-top:8px;color:var(--muted)}
+  .linkbtn{background:none;border:none;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:14px;padding:0 4px}
+  .gchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip.small{padding:5px 10px;font-size:13px}
+  .plist{margin:8px 0 0;padding-left:22px;font-size:14px;color:var(--text)}
+  .plist li{display:flex!important;gap:6px;align-items:center;padding:3px 0!important;border:none!important}
+  .sugg{display:flex;flex-wrap:wrap;gap:clamp(4px,1cqw,10px);justify-content:center;margin-top:clamp(6px,1.5cqw,16px);max-width:94%}
+  .sugg .btn{font-size:clamp(10px,1.7cqw,18px);padding:clamp(5px,1cqw,12px) clamp(8px,1.6cqw,18px)}
   .kbd{font-size:12px;color:var(--muted);margin-top:8px}
   .ov .res-btns .btn,#result .res-btns .btn{font-size:clamp(11px,2.2cqw,20px);padding:clamp(6px,1.2cqw,14px) clamp(10px,2cqw,22px)}
   .ov,#result{padding:clamp(6px,2cqw,24px)}
