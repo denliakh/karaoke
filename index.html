@@ -43,7 +43,7 @@
   aside{border-left:1px solid var(--line);overflow:auto;display:flex;flex-direction:column}
   .sec-box{padding:14px 16px;border-bottom:1px solid var(--line)}
   .sec-box h3{margin:0 0 10px;font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
-  #playerWrap{position:relative;background:#000;aspect-ratio:16/9;border-radius:12px;overflow:hidden}
+  #playerWrap{container-type:inline-size;position:relative;background:#000;aspect-ratio:16/9;border-radius:12px;overflow:hidden}
   #playerWrap:fullscreen{border-radius:0;aspect-ratio:auto;width:100vw;height:100vh}
   #player{position:absolute;inset:0;width:100%;height:100%}
   .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:20px}
@@ -81,17 +81,17 @@
     background:radial-gradient(circle at 50% 30%,rgba(124,92,255,.55),rgba(15,13,20,.96) 70%);text-align:center;padding:16px}
   #result.show{display:flex;animation:pop .35s ease-out}
   @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
-  .res-h{font-size:clamp(18px,3vw,40px);font-weight:800;margin-bottom:8px}
-  .res-row{display:flex;gap:clamp(10px,3vw,48px);justify-content:center;flex-wrap:wrap}
-  .res-card{padding:8px clamp(8px,2vw,28px);border-radius:18px}
+  .res-h{font-size:clamp(9px,3cqw,40px);font-weight:800;margin-bottom:8px}
+  .res-row{display:flex;gap:clamp(9px,3cqw,48px);justify-content:center;flex-wrap:wrap}
+  .res-card{padding:8px clamp(9px,2cqw,28px);border-radius:18px}
   .res-card.win{background:rgba(255,61,127,.15);box-shadow:0 0 0 2px var(--accent)}
-  .crown{font-size:clamp(12px,1.6vw,22px);font-weight:700;color:#ffd23d}
-  .res-name{font-size:clamp(13px,2vw,28px);color:#e6dcff}
-  .res-score{font-size:clamp(44px,11vw,180px);font-weight:900;line-height:1;background:linear-gradient(90deg,#ffd23d,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .res-stars{font-size:clamp(16px,3.4vw,52px);color:#ffd23d;letter-spacing:4px}
-  .res-title{font-size:clamp(12px,2vw,30px);font-weight:700;margin:4px 0}
-  .res-parts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:clamp(10px,1.3vw,18px);color:var(--muted)}
-  .res-song{margin-top:8px;font-size:clamp(10px,1.3vw,18px);color:var(--muted)}
+  .crown{font-size:clamp(9px,1.6cqw,22px);font-weight:700;color:#ffd23d}
+  .res-name{font-size:clamp(9px,2cqw,28px);color:#e6dcff}
+  .res-score{font-size:clamp(19px,11cqw,180px);font-weight:900;line-height:1;background:linear-gradient(90deg,#ffd23d,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .res-stars{font-size:clamp(9px,3.4cqw,52px);color:#ffd23d;letter-spacing:4px}
+  .res-title{font-size:clamp(9px,2cqw,30px);font-weight:700;margin:4px 0}
+  .res-parts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:clamp(9px,1.3cqw,18px);color:var(--muted)}
+  .res-song{margin-top:8px;font-size:clamp(9px,1.3cqw,18px);color:var(--muted)}
   .res-btns{display:flex;gap:10px;margin-top:12px}
   .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   #partyBar{display:none;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin-bottom:12px;border-radius:14px;background:var(--panel);border:1px solid var(--line);transition:box-shadow .3s}
@@ -114,24 +114,24 @@
   .ov{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:16px}
   .ov.show{display:flex;animation:pop .35s ease-out}
   #splash{background:radial-gradient(circle at 50% 35%,rgba(255,61,127,.45),rgba(15,13,20,.97) 70%)}
-  .sp-top{font-size:clamp(14px,2.4vw,34px);color:#ffd9e8;font-weight:700;letter-spacing:2px;text-transform:uppercase}
-  .sp-team{font-size:clamp(14px,2.4vw,34px);color:#ffd23d;font-weight:800}
-  .sp-name{font-size:clamp(34px,8vw,130px);font-weight:900;line-height:1.05;margin:4px 0}
+  .sp-top{font-size:clamp(9px,2.4cqw,34px);color:#ffd9e8;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+  .sp-team{font-size:clamp(9px,2.4cqw,34px);color:#ffd23d;font-weight:800}
+  .sp-name{font-size:clamp(15px,8cqw,130px);font-weight:900;line-height:1.05;margin:4px 0}
   .sp-name span{color:var(--accent)}
-  .sp-mics{font-size:clamp(11px,1.5vw,22px);color:#e6dcff}
-  .sp-song{font-size:clamp(12px,1.8vw,26px);color:var(--muted);margin-top:8px;max-width:90%}
-  .sp-count{font-size:clamp(28px,5vw,80px);font-weight:900;color:#ffd23d;margin-top:6px}
-  .res-next{margin-top:10px;font-size:clamp(12px,1.8vw,26px);color:#ffd9e8}
+  .sp-mics{font-size:clamp(9px,1.5cqw,22px);color:#e6dcff}
+  .sp-song{font-size:clamp(9px,1.8cqw,26px);color:var(--muted);margin-top:8px;max-width:90%}
+  .sp-count{font-size:clamp(12px,5cqw,80px);font-weight:900;color:#ffd23d;margin-top:6px}
+  .res-next{margin-top:10px;font-size:clamp(9px,1.8cqw,26px);color:#ffd9e8}
   #champ{background:radial-gradient(circle at 50% 35%,rgba(255,210,61,.5),rgba(15,13,20,.97) 70%)}
-  .ch-crown{font-size:clamp(50px,10vw,160px);animation:bob 1.2s ease-in-out infinite}
+  .ch-crown{font-size:clamp(22px,10cqw,160px);animation:bob 1.2s ease-in-out infinite}
   @keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
-  .ch-t{font-size:clamp(14px,2.4vw,36px);font-weight:700;color:#ffd23d;text-transform:uppercase;letter-spacing:3px}
-  .ch-name{font-size:clamp(34px,8vw,130px);font-weight:900}
-  .ch-list{font-size:clamp(12px,1.8vw,26px);margin:8px 0;color:#f3eefc}
+  .ch-t{font-size:clamp(9px,2.4cqw,36px);font-weight:700;color:#ffd23d;text-transform:uppercase;letter-spacing:3px}
+  .ch-name{font-size:clamp(15px,8cqw,130px);font-weight:900}
+  .ch-list{font-size:clamp(9px,1.8cqw,26px);margin:8px 0;color:#f3eefc}
   #breakOv{background:rgba(15,13,20,.94)}
-  .br-emoji{font-size:clamp(40px,8vw,120px)}
-  .br-t{font-size:clamp(24px,5vw,80px);font-weight:900}
-  #breakTime{font-size:clamp(20px,4vw,60px);color:#ffd23d;font-variant-numeric:tabular-nums}
+  .br-emoji{font-size:clamp(18px,8cqw,120px)}
+  .br-t{font-size:clamp(10px,5cqw,80px);font-weight:900}
+  #breakTime{font-size:clamp(9px,4cqw,60px);color:#ffd23d;font-variant-numeric:tabular-nums}
   #roulette .box{text-align:center}
   #rouWheel{font-size:clamp(26px,5vw,56px);font-weight:900;margin:22px 0;min-height:1.3em;padding:14px;border-radius:16px;background:var(--panel2)}
   #rouWheel.hit{background:linear-gradient(90deg,var(--accent),var(--accent2));animation:pop .4s}
@@ -139,6 +139,9 @@
   #rouBtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:44px}
   .qwho{font-size:12px;color:#ffb3cf;font-weight:700}
   .kbd{font-size:12px;color:var(--muted);margin-top:8px}
+  .ov .res-btns .btn,#result .res-btns .btn{font-size:clamp(11px,2.2cqw,20px);padding:clamp(6px,1.2cqw,14px) clamp(10px,2cqw,22px)}
+  .ov,#result{padding:clamp(6px,2cqw,24px)}
+  .res-btns{margin-top:clamp(4px,1.5cqw,14px);flex-wrap:wrap;justify-content:center}
 </style>
 </head>
 <body>
@@ -170,13 +173,14 @@
     <section id="tab-party" style="display:none">
       <button class="btn" id="partyToggle">🎉 Включить режим вечеринки</button>
       <div class="hint" style="margin-top:10px">Впишите игроков → каждому добавляйте песни (выберите имя сверху; два имени — дуэт) → программа ставит всех по кругу, перед песней показывает, кто поёт, а в конце — оценку.</div>
+      <label class="switch" style="margin-top:10px"><input type="checkbox" id="chooseMode"> Выбор в свой ход — если у игрока нет песни, ждём, пока он выберет (иначе — пропускаем его)</label>
       <h3 class="sub">👥 Игроки</h3>
       <form id="addPlayerForm" class="row"><input id="newPlayer" placeholder="Имя игрока" autocomplete="off"><button class="btn small" type="submit">+ Добавить</button></form>
       <ul class="queue" id="players" style="margin-top:8px"></ul>
       <h3 class="sub">📊 Итоги вечера</h3>
       <table class="tbl"><thead><tr><th></th><th>Игрок</th><th>Песен</th><th>Средний</th><th>Лучший</th></tr></thead><tbody id="totals"></tbody></table>
       <div id="finalBox" style="margin:12px 0"></div>
-      <div class="row"><button class="btn" id="finalBtn">🏆 Финал (топ-3)</button><button class="btn small sec" id="partyReset">Новая вечеринка (сброс)</button></div>
+      <div class="row"><button class="btn" id="startParty">▶ Поехали — первый ход!</button><button class="btn" id="finalBtn">🏆 Финал (топ-3)</button><button class="btn small sec" id="partyReset">Новая вечеринка (сброс)</button></div>
       <div class="status" style="margin-top:8px">Финал: трое лучших по среднему баллу поют ещё по песне — победитель становится Королём караоке. Первым поёт тот, у кого балл ниже.</div>
     </section>
   </main>
@@ -186,7 +190,7 @@
       <div id="playerWrap">
         <div id="player"></div>
         <div class="empty" id="emptyPlayer">Здесь будет видео с текстом песни</div>
-        <div class="ov" id="splash"><div id="splashBody"></div><div class="res-btns"><button class="btn" id="splashGo">▶ Начать сейчас</button><button class="btn sec" id="splashAway">🚶 Отошёл → следующий</button></div></div>
+        <div class="ov" id="splash"><div id="splashBody"></div><div class="res-btns"><button class="btn" id="splashGo">▶ Начать сейчас</button><button class="btn sec" id="splashAway">🚶 Отошёл → следующий</button><button class="btn sec" id="splashAway2" style="display:none"></button></div></div>
         <div class="ov" id="champ"><div id="champBody"></div><div class="res-btns"><button class="btn" id="champClose">Ура! 🎉</button></div></div>
         <div class="ov" id="breakOv"><div class="br-emoji">🍢🥂</div><div class="br-t">Перерыв</div><div id="breakTime">00:00</div><div class="res-btns"><button class="btn" id="breakGo">▶ Продолжаем!</button></div></div>
         <div id="result"><div id="resultBody"></div><div class="res-btns"><button class="btn" id="resultNext">Дальше ▶</button><button class="btn sec" id="resultStay">Подождать</button></div></div>
@@ -395,7 +399,7 @@
       if(pt && pt.P.on){
         if(!pt.P.sel.length){ pt.whoSings(v); return; }
         pt.P.force = { id:v.id, title:v.title, thumb:v.thumb, channel:v.channel, singers:[...pt.P.sel], team: pt.P.sel.length>1 ? pt.P.team : '' };
-        pt.partyNext(true); return;
+        pt.P.waiting = null; pt.partyNext(true); return;
       }
       playNow(v, true);
     }
@@ -412,7 +416,9 @@
     const pt = window.__party;
     if(pt && pt.P.on){
       const pv = pt.preview(15);
-      $('queue').innerHTML = pv.map(v => `<li><img src="${v.thumb}" alt=""><div class="qt"><div class="qwho">${esc(pt.singersText(v))}</div>${esc(v.title)}</div>
+      $('queue').innerHTML = pv.map(v => v.turnFor
+        ? `<li><div style="width:64px;text-align:center;font-size:22px">🤔</div><div class="qt"><div class="qwho">${esc(pt.singersText({singers:[v.turnFor]}))}</div><i style="color:var(--muted)">выберет в свой ход</i></div></li>`
+        : `<li><img src="${v.thumb}" alt=""><div class="qt"><div class="qwho">${esc(pt.singersText(v))}</div>${esc(v.title)}</div>
         <button data-pdel="${v.key}" title="Убрать">✕</button></li>`).join('');
       $('queueEmpty').textContent = 'Пусто. Выберите сверху, кто поёт, и добавляйте песни.';
       $('queueEmpty').style.display = pv.length ? 'none' : 'block';
@@ -501,7 +507,7 @@
   function goFs(){ const w=$('playerWrap'); if(!document.fullscreenElement && w.requestFullscreen) w.requestFullscreen().catch(()=>{}); }
   $('fsBtn').onclick = goFs;
   $('nextBtn').onclick = () => {
-    if($('splash').classList.contains('show')){ $('splashGo').click(); return; }
+    if($('splash').classList.contains('show')){ (window.__party && window.__party.P.waiting ? $('splashAway') : $('splashGo')).click(); return; }
     if($('result').classList.contains('show')){ $('resultNext').click(); return; }
     const g=window.__game; if(g && g.on && g.s && Math.max(g.s[0].play,g.s[1].play) > 45){ try{ player.pauseVideo(); }catch(e){} endSong(); return; }
     playNext(true);
@@ -632,7 +638,7 @@
 
   // ======================= ВЕЧЕРИНКА =======================
   const uid = () => Math.random().toString(36).slice(2, 9);
-  const P = Object.assign({ on:false, players:[], lists:{}, turn:-1, force:null, scores:[], final:null, sel:[], team:'' }, store.get('party', {}));
+  const P = Object.assign({ on:false, players:[], lists:{}, turn:-1, force:null, scores:[], final:null, sel:[], team:'', choose:true, waiting:null }, store.get('party', {}));
   const saveP = () => store.set('party', P);
   const pl = id => P.players.find(p => p.id === id);
   const songsWord = n => n + ' ' + (n%10===1 && n%100!==11 ? 'песня' : [2,3,4].includes(n%10) && ![12,13,14].includes(n%100) ? 'песни' : 'песен');
@@ -650,14 +656,17 @@
       const idx = (S.turn + k) % n, p = S.players[idx];
       if(p.away) continue;
       if(fin && !fin.includes(p.id)) continue;
-      const l = S.lists[p.id]; if(!l || !l.length) continue;
+      const l = S.lists[p.id];
+      if(!l || !l.length){ if(P.choose){ S.turn = idx; return { turnFor: p.id }; } continue; }
       S.turn = idx; return l.shift();
     }
     return null;
   }
   function preview(count = 12){
     const sim = JSON.parse(JSON.stringify({ players:P.players, lists:P.lists, turn:P.turn, force:P.force }));
-    const out = []; for(let i = 0; i < count; i++){ const it = pickNext(sim); if(!it) break; out.push(it); } return out;
+    const out = [], seen = new Set();
+    for(let i = 0; i < count; i++){ const it = pickNext(sim); if(!it) break; if(it.turnFor){ if(seen.has(it.turnFor)) break; seen.add(it.turnFor); } out.push(it); }
+    return out;
   }
   function addFor(v, singers, team){
     const owner = singers[0];
@@ -671,9 +680,13 @@
     if(P.on){
       const s = opts.singers || P.sel;
       if(!s.length){ toast('Сначала выберите сверху, кто поёт 👆', 3000); $('partyBar').classList.add('flash'); setTimeout(()=>$('partyBar').classList.remove('flash'), 1200); return null; }
+      if(P.waiting && s[0] === P.waiting){
+        P.force = { id:v.id, title:v.title, thumb:v.thumb, channel:v.channel||'', singers:[...s], team: s.length>1 ? (opts.team ?? P.team) : '', key:uid() };
+        P.waiting = null; saveP(); partyNext(true); return P.force;
+      }
       const it = addFor(v, s, opts.team ?? P.team);
       toast('Добавлено: ' + singersText(it));
-      if(!current && !$('splash').classList.contains('show')) playNext(false);
+      if(!current && !P.waiting && !$('splash').classList.contains('show')) playNext(false);
       return it;
     }
     queue.push(v); saveQueue(); renderQueue(); toast('Добавлено в очередь'); if(!current) playNext(false);
@@ -694,7 +707,8 @@
       <div class="sp-song">${esc(it.title)}</div>
       <div class="sp-count" id="spCount">5</div>`;
     $('splashAway').textContent = '🚶 ' + pname(it.singers[0]) + ' отошёл → следующий';
-    $('splash').classList.add('show');
+    $('splashGo').textContent = '▶ Начать сейчас'; $('splashAway2').style.display = 'none';
+    $('emptyPlayer').style.display='none'; $('splash').classList.add('show');
     let left = 5;
     const start = () => { clearInterval(splashTimer); $('splash').classList.remove('show'); go(); };
     splashTimer = setInterval(() => { left--; const c = $('spCount'); if(c) c.textContent = left; if(left <= 0) start(); }, 1000);
@@ -707,9 +721,33 @@
       partyNext(false);
     };
   }
+  // «Твой ход — выбирай песню»
+  function showTurn(pid){
+    clearInterval(splashTimer);
+    try{ if(playerReady) player.stopVideo(); }catch(e){}
+    current = null;
+    if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    P.waiting = pid; P.sel = [pid]; P.team = ''; saveP(); renderParty(); renderQueue();
+    $('splashBody').innerHTML = `<div class="sp-top">${P.final ? '🏆 Финал — ' : ''}Твой ход!</div>
+      <div class="sp-name">${esc(pname(pid))}</div>
+      <div class="sp-song">Выбирай песню слева 👈</div>`;
+    $('splashGo').textContent = '🎲 Случайная песня';
+    $('splashGo').onclick = () => randomSong(null);
+    $('splashAway').textContent = '⏭ Пропустить ход';
+    $('splashAway').onclick = () => { P.waiting = null; saveP(); partyNext(false); };
+    $('splashAway2').style.display = '';
+    $('splashAway2').textContent = '🚶 ' + pname(pid) + ' отошёл';
+    $('splashAway2').onclick = () => { const p = pl(pid); if(p) p.away = true; P.waiting = null; saveP(); toast(pname(pid) + ' отошёл'); partyNext(false); };
+    $('emptyPlayer').style.display='none'; $('splash').classList.add('show');
+    $('now').innerHTML = '🎤 Ход: <b>' + esc(pname(pid)) + '</b> — выбирает песню';
+    toast('🎤 ' + pname(pid) + ', твой ход! Найди песню и нажми ▶ Петь или + (для дуэта нажми сверху ещё одно имя)', 6000);
+    if(store.get('tab','search') === 'party') switchTab('cat');
+  }
   function partyNext(gesture){
     if(onBreak) return;
+    P.waiting = null;
     const it = pickNext(); saveP(); renderQueue(); renderParty();
+    if(it && it.turnFor){ showTurn(it.turnFor); return; }
     if(!it){
       current = null;
       if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
@@ -795,6 +833,7 @@
   function endBreak(){
     onBreak = false; clearInterval(breakT);
     $('breakOv').classList.remove('show'); $('breakBtn').textContent = '⏸ Перерыв';
+    if(P.waiting){ showTurn(P.waiting); return; }
     if($('splash').classList.contains('show') && current){ showSplash(current, () => load(current)); return; }
     if($('result').classList.contains('show')){ $('resultNext').click(); return; }
     try{ const s = playerReady ? player.getPlayerState() : -1; if(current && s === 2) player.playVideo(); else if(!current || s === 0 || s === -1 || s === 5) playNext(true); }catch(e){ playNext(true); }
@@ -831,9 +870,12 @@
     saveP(); renderParty();
   };
   $('teamName').oninput = () => { P.team = $('teamName').value; saveP(); };
+  $('chooseMode').checked = P.choose !== false;
+  $('chooseMode').onchange = () => { P.choose = $('chooseMode').checked; saveP(); renderQueue(); };
   $('partyToggle').onclick = () => {
     P.on = !P.on; saveP();
     if(P.on){ if(!game.on){ game.on = true; store.set('game', true); renderGameBtn(); } if(!P.players.length) $('newPlayer').focus(); }
+    else { P.waiting = null; $('splash').classList.remove('show'); }
     renderParty(); renderQueue();
   };
   $('addPlayerForm').onsubmit = e => {
@@ -847,6 +889,7 @@
   };
   function confirmInline(btn){ if(btn.dataset.sure) return true; btn.dataset.sure = 1; btn.textContent = 'точно?'; setTimeout(()=>{ delete btn.dataset.sure; btn.textContent='✕'; }, 2500); return false; }
   $('finalBtn').onclick = startFinal;
+  $('startParty').onclick = () => { if(!P.on){ $('partyToggle').click(); } if(!P.players.length){ toast('Сначала добавьте игроков'); return; } partyNext(true); };
   $('partyReset').onclick = e => { if(!confirmInline(e.target)) return; P.scores = []; P.final = null; P.champion = ''; P.lists = {}; P.turn = -1; P.force = null; saveP(); renderParty(); renderQueue(); e.target.textContent = 'Новая вечеринка (сброс)'; };
 
   // ---------- рулетка ----------
